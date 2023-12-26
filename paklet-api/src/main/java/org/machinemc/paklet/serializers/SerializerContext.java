@@ -108,11 +108,11 @@ public record SerializerContext(@Nullable AnnotatedType annotatedType, Serialize
      */
     public SerializerContext getContextForParameter(int index) {
         if (annotatedType == null) throw new UnsupportedOperationException("Currently no type is being serialized");
-        if (!(annotatedType.getType() instanceof ParameterizedType parameterized))
+        if (!(annotatedType instanceof AnnotatedParameterizedType parameterized))
             throw new UnsupportedOperationException("This Type has to parameters");
-        Type[] params = parameterized.getActualTypeArguments();
+        AnnotatedType[] params = parameterized.getAnnotatedActualTypeArguments();
         if (params.length <= index || index < 0) throw new IndexOutOfBoundsException();
-        return new SerializerContext((AnnotatedType) params[index], serializerProvider);
+        return new SerializerContext(params[index], serializerProvider);
     }
 
     @SuppressWarnings("unchecked")

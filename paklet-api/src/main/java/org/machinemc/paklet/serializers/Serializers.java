@@ -8,6 +8,7 @@ import org.machinemc.paklet.metadata.Length;
 
 import java.lang.reflect.AnnotatedArrayType;
 import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -166,6 +167,9 @@ public class Serializers {
             return objects;
         }
         private java.util.Collection<Object> createCollectionFromType(@Nullable Type target) {
+            if (target instanceof ParameterizedType parameterizedType)
+                target = parameterizedType.getRawType();
+
             java.util.Collection<Object> collection;
             if (target == java.util.Collection.class) collection = new ArrayList<>();
             else if (target == List.class || target == LinkedList.class) collection = new LinkedList<>();

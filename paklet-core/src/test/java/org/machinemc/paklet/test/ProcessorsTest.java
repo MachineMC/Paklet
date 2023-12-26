@@ -17,13 +17,13 @@ import java.util.Objects;
 public class ProcessorsTest {
 
     @Test
-    public void testPlugin() {
+    public void pluginTest() {
         assert ProcessorsUtil.isGeneratedPacketClass(TestCustomLogicPacket.class);
         assert ProcessorsUtil.isGeneratedPacketClass(TestPacket.class);
     }
 
     @Test
-    public void testProcessorsBytecode() {
+    public void processorsBytecodeTest() {
         PacketReader<TestCustomLogicPacket> cReader = new CustomReaderCreator().create(TestCustomLogicPacket.class);
         PacketWriter<TestCustomLogicPacket> cWriter = new CustomWriterCreator().create(TestCustomLogicPacket.class);
         PacketReader<TestPacket> gReader = new GeneratedReaderCreator().create(TestPacket.class);
