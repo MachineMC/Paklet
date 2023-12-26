@@ -12,6 +12,6 @@ import java.lang.annotation.Target;
  * Transient field modifier can be used instead.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.TYPE_USE})
+@Target(ElementType.TYPE_USE)
 public @interface Ignore {
 }

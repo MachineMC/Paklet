@@ -22,11 +22,10 @@ public record SerializerContext(@Nullable AnnotatedType annotatedType, Serialize
      * Creates new copy of the serializer context for given type.
      *
      * @param annotatedType type
-     * @param current original context
      * @return new context
      */
-    public static SerializerContext withType(AnnotatedType annotatedType, SerializerContext current) {
-        return new SerializerContext(annotatedType, current.serializerProvider);
+    public static SerializerContext withType(AnnotatedType annotatedType) {
+        return new SerializerContext(annotatedType, Serializer.context().serializerProvider);
     }
 
     /**

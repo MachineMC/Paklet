@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  * {@link org.machinemc.paklet.serializers.Serializers.Array}
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.TYPE_USE})
+@Target(ElementType.TYPE_USE)
 public @interface Length {
 
     int min() default 0;

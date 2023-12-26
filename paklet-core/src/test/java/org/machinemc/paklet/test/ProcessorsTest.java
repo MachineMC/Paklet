@@ -7,9 +7,11 @@ import org.machinemc.paklet.netty.NettyDataVisitor;
 import org.machinemc.paklet.processors.*;
 import org.machinemc.paklet.serializers.SerializerProvider;
 import org.machinemc.paklet.serializers.Serializers;
+import org.machinemc.paklet.test.packet.ArrayPacket;
 import org.machinemc.paklet.test.packet.TestCustomLogicPacket;
 import org.machinemc.paklet.test.packet.TestPacket;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 public class ProcessorsTest {
@@ -29,9 +31,9 @@ public class ProcessorsTest {
     }
 
     @Test
-    public void factoryTest() {
-        SerializerProvider provider = SerializerProviderBuilder.create().loadProvided().build();
-        PacketFactory factory = PacketFactoryBuilder.create(new Serializers.Integer(), provider).loadDefaults().build();
+    public void basicTest() {
+        SerializerProvider provider = serializerProvider();
+        PacketFactory factory = factory(provider);
 
         DataVisitor visitor = new NettyDataVisitor(Unpooled.buffer());
 
@@ -52,6 +54,35 @@ public class ProcessorsTest {
         TestCustomLogicPacket testCustomLogicPacketClone = factory.create(Packet.DEFAULT, visitor);
 
         assert testCustomLogicPacketClone.value == testCustomLogicPacket.value;
+    }
+
+    @Test
+    public void arrayTest() {
+        SerializerProvider provider = serializerProvider();
+        PacketFactory factory = factory(provider);
+
+        DataVisitor visitor = new NettyDataVisitor(Unpooled.buffer());
+
+        ArrayPacket arrayPacket = new ArrayPacket();
+        arrayPacket.stringArray = new String[]{"Hello", "World", "foo"};
+        arrayPacket.nestedArray = new String[][]{new String[]{"Hello", "World"}, new String[]{"foo", "bar"}};
+        arrayPacket.optionalElements = new String[]{"Hello", "optional", null};
+
+        factory.write(arrayPacket, visitor);
+        ArrayPacket arrayPacketClone = factory.create(Packet.DEFAULT, visitor);
+
+        assert Arrays.compare(arrayPacketClone.stringArray, arrayPacket.stringArray) == 0;
+        assert Arrays.compare(arrayPacketClone.nestedArray[0], arrayPacket.nestedArray[0]) == 0;
+        assert Arrays.compare(arrayPacketClone.nestedArray[1], arrayPacket.nestedArray[1]) == 0;
+        assert Arrays.compare(arrayPacketClone.optionalElements, arrayPacket.optionalElements) == 0;
+    }
+
+    private SerializerProvider serializerProvider() {
+        return SerializerProviderBuilder.create().loadProvided().build();
+    }
+
+    private PacketFactory factory(SerializerProvider serializerProvider) {
+        return PacketFactoryBuilder.create(new Serializers.Integer(), serializerProvider).loadDefaults().build();
     }
 
 }

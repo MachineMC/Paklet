@@ -1,11 +1,12 @@
 package org.machinemc.paklet.serializers;
 
+import org.jetbrains.annotations.Nullable;
 import org.machinemc.paklet.DataVisitor;
 import org.machinemc.paklet.Serializer;
 import org.machinemc.paklet.metadata.FixedLength;
 import org.machinemc.paklet.metadata.Length;
-import org.machinemc.paklet.metadata.SerializeElementsWith;
 
+import java.lang.reflect.AnnotatedArrayType;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
@@ -155,20 +156,24 @@ public class Serializers {
             if (context.annotatedType() != null)
                 checkLength(context.annotatedType(), size);
 
-            LinkedList<?> objects = new LinkedList<>();
+            java.util.Collection<Object> objects;
+            if (context.annotatedType() == null) objects = new ArrayList<>();
+            else objects = createCollectionFromType(context.annotatedType().getType());
+
             for (int i = 0; i < size; i++)
                 objects.add(SerializerContext.deserializeWith(paramContext, visitor));
 
-            if (context.annotatedType() == null) return objects;
-            Type target = context.annotatedType().getType();
-
-            if (target == java.util.Collection.class) return objects;
-            if (target == List.class || target == LinkedList.class) return objects;
-            if (target == ArrayList.class) return new ArrayList<>(objects);
-            if (target == Set.class || target == LinkedHashSet.class) return new LinkedHashSet<>(objects);
-            if (target == HashSet.class) return new HashSet<>(objects);
-
-            throw new UnsupportedOperationException(STR."Unsupported type \{target}");
+            return objects;
+        }
+        private java.util.Collection<Object> createCollectionFromType(@Nullable Type target) {
+            java.util.Collection<Object> collection;
+            if (target == java.util.Collection.class) collection = new ArrayList<>();
+            else if (target == List.class || target == LinkedList.class) collection = new LinkedList<>();
+            else if (target == ArrayList.class) collection = new ArrayList<>();
+            else if (target == Set.class || target == LinkedHashSet.class) collection = new LinkedHashSet<>();
+            else if (target == HashSet.class) collection = new HashSet<>();
+            else throw new UnsupportedOperationException(STR."Unsupported type \{target}");
+            return collection;
         }
     }
 
@@ -264,23 +269,21 @@ public class Serializers {
     @Supports({}) // has to be specified using @SerializeWith
     public static class Array implements Serializer<Object> {
         @Override
-        @SuppressWarnings("unchecked")
         public void serialize(DataVisitor visitor, Object object) {
-            Class<?> clazz = object.getClass();
-            if (!clazz.isArray()) throw new UnsupportedOperationException();
+            if (!object.getClass().isArray()) throw new UnsupportedOperationException();
             SerializerContext context = Serializer.context();
+            if (context.annotatedType() == null) throw new UnsupportedOperationException();
 
             int length = java.lang.reflect.Array.getLength(object);
             Serializer<java.lang.Integer> intSerializer = context.serializerProvider().getFor(java.lang.Integer.class);
             visitor.write(intSerializer, length);
 
-            Serializer<Object> componentSerializer = (Serializer<Object>) getComponentSerializer(clazz.getComponentType());
-
+            AnnotatedType componentType = ((AnnotatedArrayType) context.annotatedType()).getAnnotatedGenericComponentType();
+            SerializerContext componentContext = SerializerContext.withType(componentType);
             for (int i = 0; i < length; i++)
-                componentSerializer.serialize(visitor, java.lang.reflect.Array.get(object, i));
+                SerializerContext.serializeWith(componentContext, visitor, java.lang.reflect.Array.get(object, i));
         }
         @Override
-        @SuppressWarnings("unchecked")
         public Object deserialize(DataVisitor visitor) {
             SerializerContext context = Serializer.context();
             if (context.annotatedType() == null) throw new UnsupportedOperationException();
@@ -289,30 +292,14 @@ public class Serializers {
             int length = visitor.read(intSerializer);
 
             Class<?> clazz = SerializerContext.asClass(context.annotatedType().getType());
-            Object array = java.lang.reflect.Array.newInstance(clazz, length);
+            Object array = java.lang.reflect.Array.newInstance(clazz.getComponentType(), length);
 
-            Serializer<Object> componentSerializer = (Serializer<Object>) getComponentSerializer(clazz.getComponentType());
-
+            AnnotatedType componentType = ((AnnotatedArrayType) context.annotatedType()).getAnnotatedGenericComponentType();
+            SerializerContext componentContext = SerializerContext.withType(componentType);
             for (int i = 0; i < length; i++)
-                java.lang.reflect.Array.set(array, i, componentSerializer.deserialize(visitor));
+                java.lang.reflect.Array.set(array, i, SerializerContext.deserializeWith(componentContext, visitor));
 
             return array;
-        }
-        @SuppressWarnings("unchecked")
-        private static Serializer<?> getComponentSerializer(Class<?> component) {
-            SerializerContext context = Serializer.context();
-            Serializer<Object> componentSerializer;
-            if (component.isArray()) {
-                componentSerializer = new Array();
-            } else {
-                AnnotatedType type = context.annotatedType();
-                if (type != null && type.isAnnotationPresent(SerializeElementsWith.class)) {
-                    componentSerializer = (Serializer<Object>) context.serializerProvider().getOf(type.getAnnotation(SerializeElementsWith.class).value());
-                } else {
-                    componentSerializer = (Serializer<Object>) context.serializerProvider().getFor(component);
-                }
-            }
-            return componentSerializer;
         }
     }
 

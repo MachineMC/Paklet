@@ -134,7 +134,7 @@ public final class SerializerProviderBuilder {
      */
     @Contract(pure = true)
     public SerializerProvider build() {
-        return new DefaultSerializerProvider(instances, serializers);
+        return new DefaultSerializerProvider(instances, serializers, rules);
     }
 
 }

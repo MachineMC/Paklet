@@ -78,7 +78,7 @@ public final class ProcessorsUtil {
         } else {
             type = types.get(name);
         }
-        return SerializerContext.withType(type, Serializer.context());
+        return SerializerContext.withType(type);
     }
 
 }

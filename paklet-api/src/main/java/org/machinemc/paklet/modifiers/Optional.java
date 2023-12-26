@@ -10,6 +10,6 @@ import java.lang.annotation.Target;
  * a field is a null and is not marked as optional.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.TYPE_USE})
+@Target(ElementType.TYPE_USE)
 public @interface Optional {
 }

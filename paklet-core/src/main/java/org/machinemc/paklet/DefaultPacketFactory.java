@@ -49,8 +49,7 @@ class DefaultPacketFactory implements PacketFactory {
         if (annotation == null) throw new IllegalArgumentException(STR."Class \{packetClass.getName()} is not a valid packet class");
         if (reader == null || writer == null) throw new NullPointerException();
 
-        groups.putIfAbsent(annotation.group(), new PacketGroup());
-        PacketGroup group = groups.get(annotation.group());
+        PacketGroup group = groups.computeIfAbsent(annotation.group(), _ -> new PacketGroup());
 
         packet2Group.put(packetClass, group);
 

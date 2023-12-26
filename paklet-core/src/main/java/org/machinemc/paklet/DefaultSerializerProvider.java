@@ -27,9 +27,10 @@ class DefaultSerializerProvider implements SerializerProvider {
      */
     private final Set<SerializationRule> rules = new LinkedHashSet<>();
 
-    DefaultSerializerProvider(Map<Class<?>, Serializer<?>> instances, Map<Class<?>, Serializer<?>> serializers) {
+    DefaultSerializerProvider(Map<Class<?>, Serializer<?>> instances, Map<Class<?>, Serializer<?>> serializers, Collection<SerializationRule> rules) {
         this.instances.putAll(instances);
         this.serializers.putAll(serializers);
+        this.rules.addAll(rules);
     }
 
     @Override
