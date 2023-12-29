@@ -1,12 +1,12 @@
 rootProject.name = "Paklet"
 
 include("paklet-api")
-include("paklet-api-processor")
+include("paklet-processor")
 include("paklet-core")
 
 pluginManagement {
     includeBuild("build-logic")
-    includeBuild("paklet-api-plugin")
+    includeBuild("paklet-plugin")
 }
 
 dependencyResolutionManagement {

@@ -10,7 +10,7 @@ dependencies {
     implementation(libs.google.gson)
     implementation(libs.netty)
 
-    testAnnotationProcessor(project(":paklet-api-processor"))
+    testAnnotationProcessor(project(":paklet-processor"))
 }
 
 paklet {
