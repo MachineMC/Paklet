@@ -23,7 +23,7 @@ object PluginUtils {
      */
     @JvmStatic fun classFile(directory: File, internalName: String): File {
         var file = directory
-        val path = internalName.split("/").toMutableList();
+        val path = internalName.split("/").toMutableList()
         val fileName = "${path.last()}.class"
         path.removeLast()
         path.forEach { next -> file = File(file, next) }

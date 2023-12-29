@@ -57,7 +57,7 @@ class PacketExpander(file: File) {
         inner class AnnotationExtractor(delegate: AnnotationVisitor?) : AnnotationVisitor(ASM9, delegate) {
 
             override fun visit(name: String?, value: Any?) {
-                if (name == "value") id = value as Int;
+                if (name == "value") id = value as Int
                 super.visit(name, value)
             }
 
@@ -70,7 +70,7 @@ class PacketExpander(file: File) {
         private var lastField: Field? = null
 
         override fun visitField(access: Int, name: String?, descriptor: String?, signature: String?, value: Any?): FieldVisitor {
-            lastField = if (access and ACC_TRANSIENT == 0) Field(name!!, Type.getType(descriptor)) else null;
+            lastField = if (access and ACC_TRANSIENT == 0) Field(name!!, Type.getType(descriptor)) else null
             if (lastField != null && access and ACC_FINAL != 0)
                 throw IllegalStateException("Packet fields can not be marked as final - ${type.internalName}.${name}")
             return AnnotationChecker(super.visitField(access, name, descriptor, signature, value))
@@ -82,13 +82,13 @@ class PacketExpander(file: File) {
             private val ignore: Type = PluginUtils.getType("org.machinemc.paklet.modifiers.Ignore")
 
             override fun visitAnnotation(descriptor: String?, visible: Boolean): AnnotationVisitor? {
-                if (descriptor == ignore.descriptor) ignored = true;
+                if (descriptor == ignore.descriptor) ignored = true
                 return super.visitAnnotation(descriptor, visible)
             }
 
             override fun visitEnd() {
                 if (!ignored && lastField != null) this@PacketExpander.fields.add(lastField!!)
-                lastField = null;
+                lastField = null
                 super.visitEnd()
             }
 
