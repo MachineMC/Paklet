@@ -4,21 +4,28 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.jetbrains.annotations.Nullable;
 import org.machinemc.paklet.serializers.SerializerProvider;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PacketFactoryBuilder {
 
-    private final DefaultPacketFactory delegate;
+    private final Serializer<Integer> idSerializer;
+    private final SerializerProvider serializerProvider;
+    private final List<PacketInfo<?>> packetInfos;
 
     public static PacketFactoryBuilder create(Serializer<Integer> idSerializer, SerializerProvider serializerProvider) {
         return new PacketFactoryBuilder(idSerializer, serializerProvider);
     }
 
     private PacketFactoryBuilder(Serializer<Integer> idSerializer, SerializerProvider serializerProvider) {
-        delegate = new DefaultPacketFactory(idSerializer, serializerProvider);
+        this.idSerializer = idSerializer;
+        this.serializerProvider = serializerProvider;
+        packetInfos = new ArrayList<>();
     }
 
     /**
@@ -30,7 +37,7 @@ public class PacketFactoryBuilder {
      * @param <T> packet
      */
     public <T> PacketFactoryBuilder addPacket(Class<T> packetClass) {
-        delegate.addPacket(packetClass);
+        packetInfos.add(new PacketInfo<>(packetClass));
         return this;
     }
 
@@ -43,7 +50,7 @@ public class PacketFactoryBuilder {
      * @param <T> packet
      */
     public <T> PacketFactoryBuilder addPacket(Class<T> packetClass, PacketReader<T> reader, PacketWriter<T> writer) {
-        delegate.addPacket(packetClass, reader, writer);
+        packetInfos.add(new PacketInfo<>(packetClass, reader, writer));
         return this;
     }
 
@@ -85,8 +92,27 @@ public class PacketFactoryBuilder {
      * @return serializer provider of this builder
      */
     public PacketFactory build() {
-        return delegate;
+        DefaultPacketFactory factory = new DefaultPacketFactory(idSerializer, serializerProvider);
+        for (PacketInfo<?> packetInfo : packetInfos)
+            packetInfo.addTo(factory);
+        return factory;
     }
 
+    private record PacketInfo<T>(
+            Class<T> packetClass,
+            @Nullable PacketReader<T> reader,
+            @Nullable PacketWriter<T> writer
+    ) {
+
+        public PacketInfo(Class<T> packetClass) {
+            this(packetClass, null, null);
+        }
+
+        public void addTo(PacketFactory packetFactory) {
+            if (reader == null && writer == null) packetFactory.addPacket(packetClass);
+            else packetFactory.addPacket(packetClass, reader, writer);
+        }
+
+    }
 
 }
