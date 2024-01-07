@@ -61,7 +61,7 @@ public class PacketFactoryBuilder {
      * @see Packet
      */
     public PacketFactoryBuilder loadDefaults() {
-        return loadDefaults(DefaultSerializerProvider.class.getResourceAsStream("/packlet-packet-data.json"));
+        return loadDefaults(DefaultSerializerProvider.class.getResourceAsStream("/paklet-packet-data.json"));
     }
 
     /**

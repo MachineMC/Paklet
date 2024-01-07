@@ -69,7 +69,7 @@ public class PacketProcessor extends AbstractProcessor {
             file = processingEnv.getFiler().createResource(
                     StandardLocation.CLASS_OUTPUT,
                     "",
-                    "packlet-packet-data.json"
+                    "paklet-packet-data.json"
             );
             try (Writer writer = new BufferedWriter(file.openWriter())) {
                 new Gson().toJson(json, writer);

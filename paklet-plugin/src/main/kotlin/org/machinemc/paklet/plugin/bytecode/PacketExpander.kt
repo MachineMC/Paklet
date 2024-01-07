@@ -21,6 +21,7 @@ class PacketExpander(file: File) {
     init {
         PluginUtils.readClass(file, PacketExtractor())
         PluginUtils.readClass(file, FieldExtractor())
+        PluginUtils.readClassAndModify(file, OldMethodRemover()) { visitor -> visitor.toByteArray() }
         PluginUtils.readClassAndModify(file, GetterSetterInjector()) { visitor -> visitor.toByteArray() }
     }
 
@@ -92,6 +93,20 @@ class PacketExpander(file: File) {
                 super.visitEnd()
             }
 
+        }
+
+    }
+
+    inner class OldMethodRemover : ClassVisitor(ASM9, ClassWriter(ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES)) {
+
+        override fun visitMethod(access: Int, name: String?, descriptor: String?, signature: String?, exceptions: Array<out String>?): MethodVisitor? {
+            if (name!!.startsWith("\$GET_") or name.startsWith("\$SET_"))
+                return null
+            return super.visitMethod(access, name, descriptor, signature, exceptions)
+        }
+
+        fun toByteArray(): ByteArray {
+            return (super.getDelegate() as ClassWriter).toByteArray()
         }
 
     }

@@ -101,7 +101,7 @@ public final class SerializerProviderBuilder {
      * @see DefaultSerializer
      */
     public SerializerProviderBuilder loadDefaults() {
-        return loadDefaults(DefaultSerializerProvider.class.getResourceAsStream("/packlet-packet-data.json"));
+        return loadDefaults(DefaultSerializerProvider.class.getResourceAsStream("/paklet-packet-data.json"));
     }
 
     /**
