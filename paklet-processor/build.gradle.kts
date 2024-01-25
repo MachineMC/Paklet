@@ -1,5 +1,6 @@
 plugins {
     id("java-library-convention")
+    `maven-publish`
 }
 
 dependencies {
@@ -9,6 +10,28 @@ dependencies {
     annotationProcessor(libs.google.autoservice)
 
     implementation(libs.google.gson)
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "machine"
+            url = uri("http://www.machinemc.org/releases")
+            credentials(PasswordCredentials::class)
+            authentication {
+                create<BasicAuthentication>("basic")
+            }
+            isAllowInsecureProtocol = true
+        }
+    }
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = "org.machinemc"
+            artifactId = "paklet-processor"
+            version = "1.0.0"
+            from(components["java"])
+        }
+    }
 }
 
 tasks.withType<JavaCompile>().configureEach {
