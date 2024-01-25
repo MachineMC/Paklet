@@ -84,7 +84,7 @@ For more examples see `Serializers` class with default serializers provided by P
 
 To read and write packets, instance of `PacketFactory` is required. The default one is provided in the core Paklet module in
 a form of `PacketFactoryBuilder`. To create an instance, you need to provide serializer provider and serializer that will be used
-to prefix packet length.
+to prefix packet id.
 
 ```java
 SerializerProvider serializerProvider = SerializerProviderBuilder.create().loadProvided().loadDefaults().build();
@@ -92,7 +92,7 @@ PacketFactory packetFactory = PacketFactoryBuilder.create(new Serializers.Intege
 ```
 
 `SerializerProviderBuilder` allows you to simply load all serializers annotated with `@DefaultSerializer` and default serializers provided
-by Paklet. `PacketFactoryBuilder` then takes the created serializer provider, integer serializer for prefixing packet length and can
+by Paklet. `PacketFactoryBuilder` then takes the created serializer provider, integer serializer for prefixing packet id and can
 automatically load all the classes marked with `@Packet`. Both serializer provider and packet factory builder then allows individual
 registration of packets, serializers, and serialization rules. Serializers that have no argument constructor do not have to be registered
 and will be automatically resolved during runtime.
