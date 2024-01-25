@@ -6,6 +6,7 @@ import org.machinemc.paklet.Serializer;
 import org.machinemc.paklet.metadata.FixedLength;
 import org.machinemc.paklet.metadata.Length;
 
+import java.io.*;
 import java.lang.reflect.AnnotatedArrayType;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.ParameterizedType;
@@ -305,6 +306,34 @@ public class Serializers {
 
             return array;
         }
+    }
+
+    @Supports({}) // has to be specified using @SerializeWith
+    public static class Serializable implements Serializer<java.io.Serializable> {
+
+        @Override
+        public void serialize(DataVisitor visitor, java.io.Serializable serializable) {
+            try {
+                try (ObjectOutputStream oos = new ObjectOutputStream(visitor.asOutputStream())) {
+                    oos.writeObject(serializable);
+                    oos.flush();
+                }
+            } catch (Exception exception) {
+                throw new RuntimeException(exception);
+            }
+        }
+
+        @Override
+        public java.io.Serializable deserialize(DataVisitor visitor) {
+            try {
+                try (ObjectInputStream ois = new ObjectInputStream(visitor.asInputStream())) {
+                    return (java.io.Serializable) ois.readObject();
+                }
+            } catch (Exception exception) {
+                throw new RuntimeException(exception);
+            }
+        }
+
     }
 
     private static void checkLength(AnnotatedType type, int length) {

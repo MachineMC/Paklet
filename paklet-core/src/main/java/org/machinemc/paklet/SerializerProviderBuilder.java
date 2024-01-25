@@ -91,6 +91,7 @@ public final class SerializerProviderBuilder {
 
         addRule(new EnumSerializationRule());
         addRule(new ArraySerializationRule());
+        addRule(new SerializableSerializationRule());
         return this;
     }
 
