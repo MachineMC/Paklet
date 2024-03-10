@@ -105,17 +105,28 @@ For more examples see tests of the `paklet-core` module.
 ```kotlin
 repositories {
     maven {
-        url = uri("http://www.machinemc.org/releases")
-        isAllowInsecureProtocol = true
+        name = "machinemcRepositoryReleases"
+        url = uri("https://repo.machinemc.org/releases")
     }
 }
 
-implementation("org.machinemc:paklet-api:VERSION")
-annotationProcessor("org.machinemc:paklet-processor:VERSION")
+dependencies {
+    implementation("org.machinemc:paklet-api:VERSION")
+    annotationProcessor("org.machinemc:paklet-processor:VERSION")
+}
 ```
 #### Implementation
 ```kotlin
-implementation("org.machinemc:paklet-core:VERSION")
+repositories {
+    maven {
+        name = "machinemcRepositoryReleases"
+        url = uri("https://repo.machinemc.org/releases")
+    }
+}
+
+dependencies {
+    implementation("org.machinemc:paklet-core:VERSION")
+}
 ```
 
 #### Gradle Plugin
@@ -127,8 +138,7 @@ implementation("org.machinemc:paklet-core:VERSION")
 buildscript {
     repositories {
         maven {
-            url = uri("http://www.machinemc.org/releases")
-            isAllowInsecureProtocol = true
+            url = uri("https://repo.machinemc.org/releases")
         }
     }
     dependencies {
