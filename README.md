@@ -132,8 +132,8 @@ dependencies {
 #### Gradle Plugin
 > [!NOTE]
 > Gradle plugin is a key feature of Paklet. It modifies bytecode of compiled packet classes by adding hidden getters and setters which are later
-> used by generated packet readers and writers to ensure no reflection is used during the serialization to achieve higher speeds.
-> If unused, the packet serialization will be noticeably slower.
+> used by generated packet readers and writers to achieve higher speeds.
+> If unused, the packet serialization will be slower.
 ```kotlin
 buildscript {
     repositories {

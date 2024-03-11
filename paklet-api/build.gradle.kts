@@ -18,7 +18,7 @@ publishing {
         create<MavenPublication>("maven") {
             groupId = "org.machinemc"
             artifactId = "paklet-api"
-            version = "1.0.0"
+            version = project.version.toString()
             from(components["java"])
         }
     }

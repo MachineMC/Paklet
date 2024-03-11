@@ -1,11 +1,20 @@
+import java.io.FileReader
+import java.util.*
+
 plugins {
     `kotlin-dsl`
     `java-gradle-plugin`
     `maven-publish`
 }
 
-group = "org.machinemc"
-version = "1.0.0"
+val rootProperties = Properties()
+rootProperties.load(FileReader(File(rootDir.parent, "gradle.properties")))
+
+val group: String by rootProperties
+setGroup(group)
+
+val version: String by rootProperties
+setVersion(version)
 
 repositories {
     mavenCentral()
@@ -14,6 +23,10 @@ repositories {
 dependencies {
     implementation(libs.asm)
     implementation(libs.google.gson)
+}
+
+java {
+    withSourcesJar()
 }
 
 publishing {
@@ -31,7 +44,7 @@ publishing {
         create<MavenPublication>("maven") {
             groupId = "org.machinemc"
             artifactId = "paklet-plugin"
-            version = "1.0.0"
+            version = project.version.toString()
             from(components["kotlin"])
         }
     }
