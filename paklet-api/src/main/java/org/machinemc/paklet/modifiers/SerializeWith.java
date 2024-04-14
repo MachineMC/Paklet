@@ -14,6 +14,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE_USE)
 public @interface SerializeWith {
 
+    /**
+     * Class of the serializer to use.
+     *
+     * @return serializer to use
+     */
     Class<? extends Serializer<?>> value();
 
 }

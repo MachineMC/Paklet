@@ -24,8 +24,8 @@ public record SerializerContext(@Nullable AnnotatedType annotatedType, Serialize
      * @param annotatedType type
      * @return new context
      */
-    public static SerializerContext withType(AnnotatedType annotatedType) {
-        return new SerializerContext(annotatedType, Serializer.context().serializerProvider);
+    public SerializerContext withType(AnnotatedType annotatedType) {
+        return new SerializerContext(annotatedType, serializerProvider);
     }
 
     /**
@@ -40,16 +40,8 @@ public record SerializerContext(@Nullable AnnotatedType annotatedType, Serialize
      */
     @SuppressWarnings("unchecked")
     public static <T> void serializeWith(SerializerContext with, DataVisitor visitor, T object) {
-        try {
-            ScopedValue.callWhere(
-                    Serializer.CONTEXT, with,
-                    () -> {
-                        Serializer<T> serializer = (Serializer<T>) Serializer.context().serializeWith();
-                        serializer.serialize(visitor, object);
-                        return null;
-                    }
-            );
-        } catch (Exception exception) { throw new RuntimeException(exception); }
+        Serializer<T> serializer = (Serializer<T>) with.serializeWith();
+        serializer.serialize(with, visitor, object);
     }
 
     /**
@@ -64,15 +56,8 @@ public record SerializerContext(@Nullable AnnotatedType annotatedType, Serialize
      */
     @SuppressWarnings("unchecked")
     public static <T> T deserializeWith(SerializerContext with, DataVisitor visitor) {
-        try {
-            return ScopedValue.callWhere(
-                    Serializer.CONTEXT, with,
-                    () -> {
-                        Serializer<T> serializer = (Serializer<T>) Serializer.context().serializeWith();
-                        return serializer.deserialize(visitor);
-                    }
-            );
-        } catch (Exception exception) { throw new RuntimeException(exception); }
+        Serializer<T> serializer = (Serializer<T>) with.serializeWith();
+        return serializer.deserialize(with, visitor);
     }
 
     /**
@@ -132,7 +117,7 @@ public record SerializerContext(@Nullable AnnotatedType annotatedType, Serialize
                     dimensionsArray[i] = dimensions.get(i);
                 yield Array.newInstance(asClass(currentType), dimensionsArray).getClass();
             }
-            default -> throw new IllegalStateException(STR."Unexpected type: \{type}");
+            default -> throw new IllegalStateException("Unexpected type: " + type);
         };
     }
 

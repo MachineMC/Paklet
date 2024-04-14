@@ -29,11 +29,13 @@ class PacketExpander(file: File) {
 
         private var noArgsConstructor = false
         private val packet: Type = PluginUtils.getType("org.machinemc.paklet.Packet")
+        private val customPacket: Type = PluginUtils.getType("org.machinemc.paklet.CustomPacket")
 
         override fun visit(version: Int, access: Int, name: String?, signature: String?, superName: String?, interfaces: Array<out String>?) {
             type = PluginUtils.getTypeFromInternal(name!!)
-            if (superName != Type.getType(Object::class.java).internalName)
-                throw IllegalStateException("Packet ${type.internalName} must not extend any class")
+            val interfaceTypes = interfaces!!.map { PluginUtils.getTypeFromInternal(it) }.toList()
+            if (superName != Type.getType(Object::class.java).internalName && !interfaceTypes.contains(customPacket))
+                throw IllegalStateException("Packet ${type.internalName} must either not extend any class or implement custom packet logic")
             super.visit(version, access, name, signature, superName, interfaces)
         }
 
@@ -72,8 +74,8 @@ class PacketExpander(file: File) {
 
         override fun visitField(access: Int, name: String?, descriptor: String?, signature: String?, value: Any?): FieldVisitor {
             lastField = if (access and ACC_TRANSIENT == 0) Field(name!!, Type.getType(descriptor)) else null
-            if (lastField != null && access and ACC_FINAL != 0)
-                throw IllegalStateException("Packet fields can not be marked as final - ${type.internalName}.${name}")
+            if (lastField != null && access and ACC_FINAL != 0 && access and ACC_STATIC == 0)
+                throw IllegalStateException("Not static packet fields can not be marked as final - ${type.internalName}.${name}")
             return AnnotationChecker(super.visitField(access, name, descriptor, signature, value))
         }
 

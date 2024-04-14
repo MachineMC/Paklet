@@ -12,6 +12,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface Supports {
 
+    /**
+     * Array of types supported by the serializer.
+     *
+     * @return types supported by the serializer
+     */
     Class<?>[] value();
 
 }

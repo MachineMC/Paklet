@@ -1,6 +1,6 @@
 package org.machinemc.paklet;
 
-import java.util.function.Function;
+import org.machinemc.paklet.serializers.SerializerContext;
 
 /**
  * Used internally to quickly read packets from data visitors.
@@ -8,5 +8,15 @@ import java.util.function.Function;
  * @param <T> packet
  */
 @FunctionalInterface
-public interface PacketReader<T /* Packet */> extends Function<DataVisitor, T> {
+public interface PacketReader<T /* Packet */> {
+
+    /**
+     * Reads next packet from a data visitor.
+     *
+     * @param context context
+     * @param dataVisitor data visitor
+     * @return packet
+     */
+    T read(SerializerContext context, DataVisitor dataVisitor);
+
 }

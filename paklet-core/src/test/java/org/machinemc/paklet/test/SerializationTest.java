@@ -6,6 +6,7 @@ import org.machinemc.paklet.*;
 import org.machinemc.paklet.netty.NettyDataVisitor;
 import org.machinemc.paklet.serializers.SerializerProvider;
 import org.machinemc.paklet.serializers.Serializers;
+import org.machinemc.paklet.test.packet.CustomIDPacket;
 import org.machinemc.paklet.test.packet.RulesTestingPacket;
 
 import java.time.Instant;
@@ -33,6 +34,22 @@ public class SerializationTest {
         assert packetClone.date.equals(packet.date);
         assert packetClone.currency.equals(packet.currency);
         assert packetClone.state == packet.state;
+    }
+
+    @Test
+    public void dynamicPacketIDTest() {
+        SerializerProvider provider = serializerProvider();
+        PacketFactory factory = factory(provider);
+
+        DataVisitor visitor = new NettyDataVisitor(Unpooled.buffer());
+
+        CustomIDPacket packet = new CustomIDPacket();
+        packet.message = "Hello world";
+
+        factory.write(packet, visitor);
+        CustomIDPacket packetClone = factory.create(Packet.DEFAULT, visitor);
+
+        assert packet.message.equals(packetClone.message);
     }
 
     private SerializerProvider serializerProvider() {

@@ -12,6 +12,10 @@ abstract class PakletPlugin : Plugin<Project> {
 
     interface PakletPluginExtension {
 
+        /**
+         * Whether the packet classes are provided in the test module instead
+         * the main.
+         */
         val testEnvironment: Property<Boolean>
 
     }

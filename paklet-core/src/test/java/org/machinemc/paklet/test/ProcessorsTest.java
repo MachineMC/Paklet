@@ -8,7 +8,7 @@ import org.machinemc.paklet.processors.*;
 import org.machinemc.paklet.serializers.SerializerProvider;
 import org.machinemc.paklet.serializers.Serializers;
 import org.machinemc.paklet.test.packet.ArrayPacket;
-import org.machinemc.paklet.test.packet.TestCustomLogicPacket;
+import org.machinemc.paklet.test.packet.TestCustomLogicCustomPacket;
 import org.machinemc.paklet.test.packet.TestPacket;
 
 import java.util.Arrays;
@@ -18,14 +18,14 @@ public class ProcessorsTest {
 
     @Test
     public void pluginTest() {
-        assert ProcessorsUtil.isGeneratedPacketClass(TestCustomLogicPacket.class);
+        assert ProcessorsUtil.isGeneratedPacketClass(TestCustomLogicCustomPacket.class);
         assert ProcessorsUtil.isGeneratedPacketClass(TestPacket.class);
     }
 
     @Test
     public void processorsBytecodeTest() {
-        PacketReader<TestCustomLogicPacket> cReader = new CustomReaderCreator().create(TestCustomLogicPacket.class);
-        PacketWriter<TestCustomLogicPacket> cWriter = new CustomWriterCreator().create(TestCustomLogicPacket.class);
+        PacketReader<TestCustomLogicCustomPacket> cReader = new CustomReaderCreator().create(TestCustomLogicCustomPacket.class);
+        PacketWriter<TestCustomLogicCustomPacket> cWriter = new CustomWriterCreator().create(TestCustomLogicCustomPacket.class);
         PacketReader<TestPacket> gReader = new GeneratedReaderCreator().create(TestPacket.class);
         PacketWriter<TestPacket> gWriter = new GeneratedWriterCreator().create(TestPacket.class);
     }
@@ -48,10 +48,10 @@ public class ProcessorsTest {
         assert Objects.equals(testPacketClone.name, testPacket.name);
         assert testPacketClone.value == testPacket.value;
 
-        TestCustomLogicPacket testCustomLogicPacket = new TestCustomLogicPacket();
+        TestCustomLogicCustomPacket testCustomLogicPacket = new TestCustomLogicCustomPacket();
         testCustomLogicPacket.value = 20;
         factory.write(testCustomLogicPacket, visitor);
-        TestCustomLogicPacket testCustomLogicPacketClone = factory.create(Packet.DEFAULT, visitor);
+        TestCustomLogicCustomPacket testCustomLogicPacketClone = factory.create(Packet.DEFAULT, visitor);
 
         assert testCustomLogicPacketClone.value == testCustomLogicPacket.value;
     }

@@ -3,6 +3,9 @@ package org.machinemc.paklet.netty;
 import io.netty.buffer.ByteBuf;
 import org.machinemc.paklet.DataVisitor;
 
+/**
+ * Implementation of data visitor backed by netty's byte buffer.
+ */
 public class NettyDataVisitor implements DataVisitor {
 
     private final ByteBuf delegate;

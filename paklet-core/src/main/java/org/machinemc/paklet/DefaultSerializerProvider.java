@@ -39,10 +39,10 @@ class DefaultSerializerProvider implements SerializerProvider {
         if (serializers.containsKey(type))
             return (Serializer<T>) serializers.get(type);
         for (SerializationRule rule : rules) {
-            Serializer<?> serializer = rule.apply(type);
+            Serializer<?> serializer = rule.findSerializer(this, type);
             if (serializer != null) return (Serializer<T>) serializer;
         }
-        throw new NullPointerException(STR."No serializer found for type \{type.getName()}");
+        throw new NullPointerException("No serializer found for type " + type.getName());
     }
 
     @Override
@@ -53,7 +53,7 @@ class DefaultSerializerProvider implements SerializerProvider {
         try {
             serializer = clazz.getConstructor().newInstance();
         } catch (Exception exception) {
-            throw new RuntimeException(STR."Failed to initiate \{clazz.getName()} serializer because it has no default constructor");
+            throw new RuntimeException("Failed to initiate " + clazz.getName() + " serializer because it has no default constructor");
         }
         instances.put(clazz, serializer);
         return serializer;

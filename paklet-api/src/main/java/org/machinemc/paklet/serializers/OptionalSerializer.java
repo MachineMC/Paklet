@@ -17,19 +17,19 @@ class OptionalSerializer<T> implements Serializer<T> {
     }
 
     @Override
-    public void serialize(DataVisitor visitor, @Nullable T t) {
+    public void serialize(SerializerContext context, DataVisitor visitor, @Nullable T t) {
         if (t == null) {
             visitor.writeBoolean(false);
             return;
         }
         visitor.writeBoolean(true);
-        visitor.write(wrapped, t);
+        visitor.write(context, wrapped, t);
     }
 
     @Override
-    public @Nullable T deserialize(DataVisitor visitor) {
+    public @Nullable T deserialize(SerializerContext context, DataVisitor visitor) {
         if (!visitor.readBoolean()) return null;
-        return visitor.read(wrapped);
+        return visitor.read(context, wrapped);
     }
 
 }

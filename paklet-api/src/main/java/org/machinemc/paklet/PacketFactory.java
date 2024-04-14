@@ -23,7 +23,28 @@ public interface PacketFactory {
      * @param writer writer for the packet
      * @param <T> packet
      */
-    <T /* Packet */> void addPacket(Class<T> packetClass, PacketReader<T> reader, PacketWriter<T> writer);
+    <T /* Packet */> void addPacket(Class<T> packetClass,
+                                    PacketReader<T> reader,
+                                    PacketWriter<T> writer);
+
+    /**
+     * Adds new packet information to this factory.
+     * <p>
+     * This method does not require the packet class to be annotated with
+     * {@link Packet} annotation.
+     *
+     * @param packetClass class of the packet
+     * @param reader reader for the packet
+     * @param writer writer for the packet
+     * @param packetID packet ID used to register this packet
+     * @param packetGroup group name of this packet
+     * @param <T> packet
+     */
+    <T /* Packet */> void addPacket(Class<T> packetClass,
+                                    PacketReader<T> reader,
+                                    PacketWriter<T> writer,
+                                    int packetID,
+                                    String packetGroup);
 
     /**
      * Creates new packet instance from given data.

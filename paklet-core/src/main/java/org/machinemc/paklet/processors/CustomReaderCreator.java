@@ -1,8 +1,9 @@
 package org.machinemc.paklet.processors;
 
 import org.machinemc.paklet.DataVisitor;
-import org.machinemc.paklet.PacketLogic;
+import org.machinemc.paklet.CustomPacket;
 import org.machinemc.paklet.PacketReader;
+import org.machinemc.paklet.serializers.SerializerContext;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
@@ -18,8 +19,8 @@ public class CustomReaderCreator implements ReaderCreator {
     @Override
     @SuppressWarnings("unchecked")
     public <T> PacketReader<T> create(Class<T> packet) {
-        if (Arrays.stream(packet.getInterfaces()).noneMatch(type -> type == PacketLogic.class))
-            throw new UnsupportedOperationException(STR."Custom reader can not be created for \{packet.getName()}");
+        if (Arrays.stream(packet.getInterfaces()).noneMatch(type -> type == CustomPacket.class))
+            throw new UnsupportedOperationException("Custom reader can not be created for " + packet.getName());
         try {
             Class<?> created = createDefaultReaderClass(packet);
             return (PacketReader<T>) created.getConstructor().newInstance();
@@ -31,19 +32,19 @@ public class CustomReaderCreator implements ReaderCreator {
     @SuppressWarnings("unchecked")
     private <T> Class<? extends PacketReader<T>> createDefaultReaderClass(Class<T> packet) throws IllegalAccessException {
         try {
-            return (Class<? extends PacketReader<T>>) Class.forName(STR."\{packet.getName()}_READER");
-        } catch (Exception _) { }
+            return (Class<? extends PacketReader<T>>) Class.forName(packet.getName() + "_READER");
+        } catch (Exception ignored) { }
 
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 
         Type packetType = Type.getType(packet);
-        Type readerType = Type.getType(STR."L\{packet.getPackageName().replace('.', '/')}/\{packet.getSimpleName()}_READER;");
+        Type readerType = Type.getType("L" + packet.getPackageName().replace('.', '/') + "/" + packet.getSimpleName() + "_READER;");
 
         writer.visit(
                 V21,
                 ACC_PUBLIC,
                 readerType.getInternalName(),
-                STR."L\{Type.getType(PacketReader.class).getInternalName()}<\{packetType.getDescriptor()}>;",
+                "L" + Type.getType(PacketReader.class).getInternalName() + "<" + packetType.getDescriptor() + ">;",
                 Type.getType(Object.class).getInternalName(),
                 new String[] {Type.getType(PacketReader.class).getInternalName()}
         );
@@ -69,8 +70,12 @@ public class CustomReaderCreator implements ReaderCreator {
 
         methodVisitor = writer.visitMethod(
                 ACC_PUBLIC,
-                "apply",
-                Type.getMethodDescriptor(Type.getType(Object.class), Type.getType(Object.class)),
+                "read",
+                Type.getMethodDescriptor(
+                        Type.getType(Object.class),
+                        Type.getType(SerializerContext.class),
+                        Type.getType(DataVisitor.class)
+                ),
                 null,
                 new String[0]
         );
@@ -85,11 +90,16 @@ public class CustomReaderCreator implements ReaderCreator {
         );
         methodVisitor.visitInsn(DUP);
         methodVisitor.visitVarInsn(ALOAD, 1);
+        methodVisitor.visitVarInsn(ALOAD, 2);
         methodVisitor.visitMethodInsn(
                 INVOKEVIRTUAL,
                 packetType.getInternalName(),
                 "construct",
-                Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(DataVisitor.class)),
+                Type.getMethodDescriptor(
+                        Type.VOID_TYPE,
+                        Type.getType(SerializerContext.class),
+                        Type.getType(DataVisitor.class)
+                ),
                 false
         );
         methodVisitor.visitInsn(ARETURN);

@@ -1,5 +1,7 @@
 package org.machinemc.paklet;
 
+import org.machinemc.paklet.serializers.SerializerContext;
+
 import java.io.InputStream;
 
 class DelegateWriteOnlyDataVisitor implements DataVisitor {
@@ -27,7 +29,7 @@ class DelegateWriteOnlyDataVisitor implements DataVisitor {
     }
 
     @Override
-    public <T> T read(Serializer<T> serializer) {
+    public <T> T read(SerializerContext context, Serializer<T> serializer) {
         throw new UnsupportedOperationException();
     }
 

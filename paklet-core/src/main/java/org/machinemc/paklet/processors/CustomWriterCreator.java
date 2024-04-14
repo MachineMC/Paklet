@@ -1,8 +1,9 @@
 package org.machinemc.paklet.processors;
 
 import org.machinemc.paklet.DataVisitor;
-import org.machinemc.paklet.PacketLogic;
+import org.machinemc.paklet.CustomPacket;
 import org.machinemc.paklet.PacketWriter;
+import org.machinemc.paklet.serializers.SerializerContext;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
@@ -18,8 +19,8 @@ public class CustomWriterCreator implements WriterCreator {
     @Override
     @SuppressWarnings("unchecked")
     public <T> PacketWriter<T> create(Class<T> packet) {
-        if (Arrays.stream(packet.getInterfaces()).noneMatch(type -> type == PacketLogic.class))
-            throw new UnsupportedOperationException(STR."Custom writer can not be created for \{packet.getName()}");
+        if (Arrays.stream(packet.getInterfaces()).noneMatch(type -> type == CustomPacket.class))
+            throw new UnsupportedOperationException("Custom writer can not be created for " + packet.getName());
         try {
             Class<?> created = createDefaultWriterClass(packet);
             return (PacketWriter<T>) created.getConstructor().newInstance();
@@ -31,19 +32,19 @@ public class CustomWriterCreator implements WriterCreator {
     @SuppressWarnings("unchecked")
     private <T> Class<? extends PacketWriter<T>> createDefaultWriterClass(Class<T> packet) throws IllegalAccessException {
         try {
-            return (Class<? extends PacketWriter<T>>) Class.forName(STR."\{packet.getName()}_WRITER");
-        } catch (Exception _) { }
+            return (Class<? extends PacketWriter<T>>) Class.forName(packet.getName() + "_WRITER");
+        } catch (Exception ignored) { }
 
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 
         Type packetType = Type.getType(packet);
-        Type readerType = Type.getType(STR."L\{packet.getPackageName().replace('.', '/')}/\{packet.getSimpleName()}_WRITER;");
+        Type readerType = Type.getType("L" + packet.getPackageName().replace('.', '/') + "/" + packet.getSimpleName() + "_WRITER;");
 
         writer.visit(
                 V21,
                 ACC_PUBLIC,
                 readerType.getInternalName(),
-                STR."L\{Type.getType(PacketWriter.class).getInternalName()}<\{packetType.getDescriptor()}>;",
+                "L" + Type.getType(PacketWriter.class).getInternalName() + "<" + packetType.getDescriptor() + ">;",
                 Type.getType(Object.class).getInternalName(),
                 new String[] {Type.getType(PacketWriter.class).getInternalName()}
         );
@@ -69,19 +70,29 @@ public class CustomWriterCreator implements WriterCreator {
 
         methodVisitor = writer.visitMethod(
                 ACC_PUBLIC,
-                "accept",
-                Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Object.class), Type.getType(Object.class)),
+                "write",
+                Type.getMethodDescriptor(
+                        Type.VOID_TYPE,
+                        Type.getType(SerializerContext.class),
+                        Type.getType(DataVisitor.class),
+                        Type.getType(Object.class)
+                ),
                 null,
                 new String[0]
         );
-        methodVisitor.visitVarInsn(ALOAD, 2);
+        methodVisitor.visitVarInsn(ALOAD, 3);
         methodVisitor.visitTypeInsn(CHECKCAST, packetType.getInternalName());
         methodVisitor.visitVarInsn(ALOAD, 1);
+        methodVisitor.visitVarInsn(ALOAD, 2);
         methodVisitor.visitMethodInsn(
                 INVOKEVIRTUAL,
                 packetType.getInternalName(),
                 "deconstruct",
-                Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(DataVisitor.class)),
+                Type.getMethodDescriptor(
+                        Type.VOID_TYPE,
+                        Type.getType(SerializerContext.class),
+                        Type.getType(DataVisitor.class)
+                ),
                 false
         );
         methodVisitor.visitInsn(RETURN);

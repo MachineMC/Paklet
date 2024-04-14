@@ -17,8 +17,14 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE_USE)
 public @interface Length {
 
+    /**
+     * @return minimal allowed length
+     */
     int min() default 0;
 
+    /**
+     * @return maximal allowed length
+     */
     int max() default Integer.MAX_VALUE;
 
 }

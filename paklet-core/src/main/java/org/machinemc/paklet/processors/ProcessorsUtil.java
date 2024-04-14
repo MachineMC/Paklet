@@ -23,8 +23,6 @@ public final class ProcessorsUtil {
         throw new UnsupportedOperationException();
     }
 
-    private static final Map<Class<?>, Map<String, AnnotatedType>> CACHED = new ConcurrentHashMap<>();
-
     /**
      * Checks whether the provided packet class is modified by the
      * Paklet Gradle plugin.
@@ -40,9 +38,9 @@ public final class ProcessorsUtil {
 
         for (Field field : fields) {
             try {
-                Method get = packet.getDeclaredMethod(STR."$GET_\{field.getName()}");
+                Method get = packet.getDeclaredMethod("$GET_" + field.getName());
                 if (!Modifier.isPublic(get.getModifiers())) return false;
-                Method set = packet.getDeclaredMethod(STR."$SET_\{field.getName()}", field.getType());
+                Method set = packet.getDeclaredMethod("$SET_" + field.getName(), field.getType());
                 if (!Modifier.isPublic(set.getModifiers())) return false;
             } catch (Exception exception) {
                 return false;
@@ -51,25 +49,31 @@ public final class ProcessorsUtil {
         return true;
     }
 
-    public static Object getValueForField(DataVisitor visitor, Class<?> packet, String name) throws Exception {
-        SerializerContext context = createContextForField(packet, name);
-        return ScopedValue.callWhere(Serializer.CONTEXT, context, () -> context.serializeWith().deserialize(visitor.readOnly()));
+    public static List<Field> collectSerializableFields(Class<?> packet) {
+        return Arrays.stream(packet.getDeclaredFields())
+                .filter(field -> !Modifier.isStatic(field.getModifiers()))
+                .filter(field -> !Modifier.isTransient(field.getModifiers()))
+                .filter(field -> !field.isAnnotationPresent(Ignore.class))
+                .toList();
+    }
+
+    public static Object getValueForField(SerializerContext context, DataVisitor visitor, Class<?> packet, String name) {
+        context = createContextForField(context, packet, name);
+        return context.serializeWith().deserialize(context, visitor.readOnly());
     }
 
     @SuppressWarnings("unchecked")
-    public static void setValueForField(DataVisitor visitor, Class<?> packet, String name, Object value) throws Exception {
-        SerializerContext context = createContextForField(packet, name);
-        ScopedValue.callWhere(Serializer.CONTEXT, context, () -> {
-            Serializer<Object> serializer = (Serializer<Object>) context.serializeWith();
-            serializer.serialize(visitor.writeOnly(), value);
-            return null;
-        });
+    public static void setValueForField(SerializerContext context, DataVisitor visitor, Class<?> packet, String name, Object value) {
+        context = createContextForField(context, packet, name);
+        Serializer<Object> serializer = (Serializer<Object>) context.serializeWith();
+        serializer.serialize(context, visitor.writeOnly(), value);
     }
 
-    public static SerializerContext createContextForField(Class<?> packet, String name) {
+    private static final Map<Class<?>, Map<String, AnnotatedType>> CACHED = new ConcurrentHashMap<>();
+
+    public static SerializerContext createContextForField(SerializerContext context, Class<?> packet, String name) {
         AnnotatedType type;
-        CACHED.putIfAbsent(packet, new ConcurrentHashMap<>());
-        Map<String, AnnotatedType> types = CACHED.get(packet);
+        Map<String, AnnotatedType> types = CACHED.computeIfAbsent(packet, c -> new ConcurrentHashMap<>());
         if (!types.containsKey(name)) {
             try {
                 type = packet.getDeclaredField(name).getAnnotatedType();
@@ -78,7 +82,7 @@ public final class ProcessorsUtil {
         } else {
             type = types.get(name);
         }
-        return SerializerContext.withType(type);
+        return context.withType(type);
     }
 
 }

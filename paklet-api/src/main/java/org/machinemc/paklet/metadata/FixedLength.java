@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * By default, supported by {@link org.machinemc.paklet.serializers.Serializers.String},
  * {@link org.machinemc.paklet.serializers.Serializers.Collection},
  * {@link org.machinemc.paklet.serializers.Serializers.BitSet}, and
- * {@link org.machinemc.paklet.serializers.Serializers.Array}
+ * {@link org.machinemc.paklet.serializers.Serializers.Array}.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE_USE)

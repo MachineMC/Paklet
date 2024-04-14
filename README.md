@@ -1,12 +1,14 @@
 ![banner](.github/assets/logo_dark.png#gh-dark-mode-only)
 ![banner](.github/assets/logo_light.png#gh-light-mode-only)
 
-# Paklet
+<p align="center">Paklet is annotation based Java library for simple and fast packet crafting.</p>
 
-[![license](https://img.shields.io/github/license/machinemc/paklet?style=for-the-badge&color=657185)](LICENSE)
-![release](https://img.shields.io/github/v/release/machinemc/paklet?style=for-the-badge&color=edb228)
+<p align="center">
+    <img src="https://img.shields.io/github/license/machinemc/paklet?style=for-the-badge&color=107185" alt="LICENSE">
+    <img src="https://img.shields.io/github/v/release/machinemc/paklet?style=for-the-badge&color=edb228" alt="RELEASE">
+</p>
 
-Paklet is annotation based Java library for simple and fast packet crafting.
+---
 
 # Table of contents
 * [Features](#features)

@@ -4,6 +4,9 @@ import org.machinemc.paklet.processors.*;
 import org.machinemc.paklet.serializers.SerializerContext;
 import org.machinemc.paklet.serializers.SerializerProvider;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -25,7 +28,7 @@ class DefaultPacketFactory implements PacketFactory {
         ReaderCreator readerCreator;
         WriterCreator writerCreator;
 
-        if (PacketLogic.class.isAssignableFrom(packetClass)) {
+        if (CustomPacket.class.isAssignableFrom(packetClass)) {
             readerCreator = new CustomReaderCreator();
             writerCreator = new CustomWriterCreator();
         }
@@ -46,47 +49,62 @@ class DefaultPacketFactory implements PacketFactory {
     @Override
     public <T> void addPacket(Class<T> packetClass, PacketReader<T> reader, PacketWriter<T> writer) {
         Packet annotation = packetClass.getAnnotation(Packet.class);
-        if (annotation == null) throw new IllegalArgumentException(STR."Class \{packetClass.getName()} is not a valid packet class");
-        if (reader == null || writer == null) throw new NullPointerException();
+        if (annotation == null) throw new IllegalArgumentException("Class " + packetClass.getName() + " is not a valid packet class");
+        addPacket(packetClass, reader, writer, getPacketID(packetClass), annotation.group());
+    }
 
-        PacketGroup group = groups.computeIfAbsent(annotation.group(), _ -> new PacketGroup());
-
+    @Override
+    public <T> void addPacket(Class<T> packetClass, PacketReader<T> reader, PacketWriter<T> writer, int packetID, String packetGroup) {
+        if (packetClass == null || reader == null || writer == null) throw new NullPointerException();
+        if (packetID == Packet.INVALID_PACKET) return; // invalid packets should be ignored
+        if (packetID < 0) throw new IllegalArgumentException("Invalid packet ID for packet " + packetClass.getName());
+        PacketGroup group = groups.computeIfAbsent(packetGroup, g -> new PacketGroup());
         packet2Group.put(packetClass, group);
-
-        group.addPacket(annotation.value(), packetClass, reader, writer);
+        group.addPacket(packetID, packetClass, reader, writer);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> T create(String group, DataVisitor visitor) {
-        try {
-            return ScopedValue.callWhere(Serializer.CONTEXT, new SerializerContext(null, serializerProvider), () -> {
-                PacketGroup packetGroup = groups.get(group);
-                if (packetGroup == null) throw new NullPointerException(STR."There is no \{group} packet group");
-                Class<?> packetClass = packetGroup.getPacket(visitor.read(idSerializer));
-                return (T) packetGroup.getReader(packetClass).apply(visitor);
-            });
-        } catch (Exception exception) {
-            throw new RuntimeException(exception);
-        }
+        SerializerContext context = new SerializerContext(null, serializerProvider);
+        PacketGroup packetGroup = groups.get(group);
+        if (packetGroup == null) throw new NullPointerException("There is no " + group + " packet group");
+        Class<?> packetClass = packetGroup.getPacket(visitor.read(context, idSerializer));
+        return (T) packetGroup.getReader(packetClass).read(context, visitor);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> void write(T packet, DataVisitor visitor) {
-        try {
-            ScopedValue.callWhere(Serializer.CONTEXT, new SerializerContext(null, serializerProvider), () -> {
-                Class<?> packetClass = packet.getClass();
-                PacketGroup packetGroup = packet2Group.get(packetClass);
-                if (packetGroup == null) throw new NullPointerException(STR."Packet \{packetClass.getName()} is not assigned to any group");
-                PacketWriter<T> writer = (PacketWriter<T>) packetGroup.getWriter(packetClass);
-                visitor.write(idSerializer, packetGroup.getID(packetClass));
-                writer.accept(visitor, packet);
-                return null;
-            });
-        } catch (Exception exception) {
-            throw new RuntimeException(exception);
+        SerializerContext context = new SerializerContext(null, serializerProvider);
+        Class<?> packetClass = packet.getClass();
+        PacketGroup packetGroup = packet2Group.get(packetClass);
+        if (packetGroup == null) throw new NullPointerException("Packet " + packetClass.getName() + " is not assigned to any group");
+        PacketWriter<T> writer = (PacketWriter<T>) packetGroup.getWriter(packetClass);
+        visitor.write(context, idSerializer, packetGroup.getID(packetClass));
+        writer.write(context, visitor, packet);
+    }
+
+    private int getPacketID(Class<?> packetClass) {
+        Packet annotation = packetClass.getAnnotation(Packet.class);
+        if (annotation == null) throw new IllegalArgumentException("Class " + packetClass.getName() + " is not a valid packet class");
+        if (annotation.value() == Packet.INVALID_PACKET) return Packet.INVALID_PACKET;
+        if (annotation.value() == Packet.DYNAMIC_PACKET) {
+            Field[] packetIDFields = Arrays.stream(packetClass.getDeclaredFields())
+                    .filter(f -> Modifier.isStatic(f.getModifiers()))
+                    .filter(f -> f.getType().equals(int.class))
+                    .filter(f -> f.isAnnotationPresent(PacketID.class))
+                    .toArray(Field[]::new);
+            if (packetIDFields.length == 0) throw new IllegalStateException("Class " + packetClass.getName() + " is missing packet ID field");
+            if (packetIDFields.length > 1) throw new IllegalStateException("Class " + packetClass.getName() + " has more than one packet ID field");
+            try {
+                packetIDFields[0].setAccessible(true);
+                return (int) packetIDFields[0].get(null);
+            } catch (Exception exception) {
+                throw new RuntimeException(exception);
+            }
         }
+        return annotation.value();
     }
 
     static class PacketGroup {
@@ -100,7 +118,7 @@ class DefaultPacketFactory implements PacketFactory {
         public void addPacket(int packetID, Class<?> packetClass, PacketReader<?> reader, PacketWriter<?> writer) {
             if (packet2ID.containsKey(packetClass)) return;
             if (id2Packet.containsKey(packetID))
-                throw new IllegalArgumentException(STR."ID \{packetID} is already used by \{getPacket(packetID).getName()}");
+                throw new IllegalArgumentException("ID " + packetID + " is already used by " + getPacket(packetID).getName());
 
             id2Packet.put(packetID, packetClass);
             packet2ID.put(packetClass, packetID);
