@@ -1,7 +1,8 @@
-package org.machinemc.paklet.serializers;
+package org.machinemc.paklet.serialization.rule;
 
 import org.jetbrains.annotations.Nullable;
-import org.machinemc.paklet.Serializer;
+import org.machinemc.paklet.serialization.Serializer;
+import org.machinemc.paklet.serialization.SerializerProvider;
 
 /**
  * Used for providing extra rules for serialization providers.

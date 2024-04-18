@@ -60,7 +60,7 @@ class PacketExpander(file: File) {
         inner class AnnotationExtractor(delegate: AnnotationVisitor?) : AnnotationVisitor(ASM9, delegate) {
 
             override fun visit(name: String?, value: Any?) {
-                if (name == "value") id = value as Int
+                if (name == "id") id = value as Int
                 super.visit(name, value)
             }
 

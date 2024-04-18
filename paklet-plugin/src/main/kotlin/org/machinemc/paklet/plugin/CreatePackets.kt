@@ -38,7 +38,6 @@ abstract class CreatePackets : DefaultTask() {
 
     @Internal lateinit var sourcesDir: File
 
-    @Internal lateinit var defaultSerializers: JsonArray
     @Internal lateinit var packets: JsonArray
 
     fun init() {
@@ -76,7 +75,6 @@ abstract class CreatePackets : DefaultTask() {
         hasJson = true
 
         JsonParser.parseReader(FileReader(file)).asJsonObject.run {
-            defaultSerializers = getAsJsonArray("defaultSerializers")
             packets = getAsJsonArray("packets")
         }
     }

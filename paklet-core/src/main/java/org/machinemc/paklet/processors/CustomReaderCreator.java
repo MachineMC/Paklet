@@ -3,7 +3,7 @@ package org.machinemc.paklet.processors;
 import org.machinemc.paklet.DataVisitor;
 import org.machinemc.paklet.CustomPacket;
 import org.machinemc.paklet.PacketReader;
-import org.machinemc.paklet.serializers.SerializerContext;
+import org.machinemc.paklet.serialization.SerializerContext;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;

@@ -2,10 +2,11 @@ package org.machinemc.paklet.test.packet;
 
 import org.machinemc.paklet.Packet;
 import org.machinemc.paklet.PacketID;
+import org.machinemc.paklet.test.TestPackets;
 
 import java.util.Random;
 
-@Packet(Packet.DYNAMIC_PACKET)
+@Packet(id = Packet.DYNAMIC_PACKET, catalogue = TestPackets.class)
 public class CustomIDPacket {
 
     @PacketID

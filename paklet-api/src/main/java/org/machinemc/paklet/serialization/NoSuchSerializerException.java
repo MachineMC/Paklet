@@ -1,4 +1,4 @@
-package org.machinemc.paklet.serializers;
+package org.machinemc.paklet.serialization;
 
 /**
  * Exception thrown if no serializer for given class has been found.

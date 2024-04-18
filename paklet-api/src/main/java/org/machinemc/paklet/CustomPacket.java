@@ -1,12 +1,14 @@
 package org.machinemc.paklet;
 
-import org.machinemc.paklet.serializers.SerializerContext;
+import org.machinemc.paklet.serialization.SerializerContext;
 
 /**
  * Used for packets that are serialized manually (not automatically using registered serializers).
  * <p>
  * This can be used for packets that require very specific serialization to be done to optimize
  * the process and keeping the code clean.
+ * <p>
+ * This also allows the packet class to extend another class.
  */
 public interface CustomPacket {
 

@@ -1,5 +1,8 @@
 package org.machinemc.paklet.utils;
 
+/**
+ * Utility class that boxes the primitive types.
+ */
 public final class AutoBoxer {
 
     private AutoBoxer() {

@@ -3,9 +3,10 @@ package org.machinemc.paklet.test.packet;
 import org.machinemc.paklet.DataVisitor;
 import org.machinemc.paklet.Packet;
 import org.machinemc.paklet.CustomPacket;
-import org.machinemc.paklet.serializers.SerializerContext;
+import org.machinemc.paklet.serialization.SerializerContext;
+import org.machinemc.paklet.test.TestPackets;
 
-@Packet(0x50)
+@Packet(id = 0x50, catalogue = TestPackets.class)
 public class TestCustomLogicCustomPacket extends ExtensionTest implements CustomPacket {
 
     public byte value;

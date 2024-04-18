@@ -1,7 +1,8 @@
 package org.machinemc.paklet;
 
 import org.jetbrains.annotations.Contract;
-import org.machinemc.paklet.serializers.SerializerContext;
+import org.machinemc.paklet.serialization.Serializer;
+import org.machinemc.paklet.serialization.SerializerContext;
 
 import java.io.InputStream;
 import java.io.OutputStream;

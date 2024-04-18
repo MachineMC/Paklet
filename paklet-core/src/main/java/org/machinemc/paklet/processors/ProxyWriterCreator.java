@@ -2,7 +2,7 @@ package org.machinemc.paklet.processors;
 
 import org.machinemc.paklet.DataVisitor;
 import org.machinemc.paklet.PacketWriter;
-import org.machinemc.paklet.serializers.SerializerContext;
+import org.machinemc.paklet.serialization.SerializerContext;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;

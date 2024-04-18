@@ -1,8 +1,7 @@
-package org.machinemc.paklet;
+package org.machinemc.paklet.serialization;
 
+import org.machinemc.paklet.DataVisitor;
 import org.machinemc.paklet.modifiers.SerializeWith;
-import org.machinemc.paklet.serializers.DefaultSerializer;
-import org.machinemc.paklet.serializers.SerializerContext;
 
 /**
  * Serializer for custom packet fields.

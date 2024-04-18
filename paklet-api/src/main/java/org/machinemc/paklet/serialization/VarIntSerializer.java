@@ -1,7 +1,6 @@
-package org.machinemc.paklet.serializers;
+package org.machinemc.paklet.serialization;
 
 import org.machinemc.paklet.DataVisitor;
-import org.machinemc.paklet.Serializer;
 
 /**
  * Serializer for variable-length integers.

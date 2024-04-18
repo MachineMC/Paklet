@@ -1,6 +1,7 @@
 package org.machinemc.paklet;
 
-import org.machinemc.paklet.serializers.SerializerContext;
+import org.machinemc.paklet.serialization.Serializer;
+import org.machinemc.paklet.serialization.SerializerContext;
 
 import java.io.OutputStream;
 import java.util.function.BiConsumer;

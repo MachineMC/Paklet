@@ -4,8 +4,6 @@ import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.Test;
 import org.machinemc.paklet.*;
 import org.machinemc.paklet.netty.NettyDataVisitor;
-import org.machinemc.paklet.serializers.SerializerProvider;
-import org.machinemc.paklet.serializers.Serializers;
 import org.machinemc.paklet.test.packet.CollectionsPacket;
 
 import java.util.ArrayList;
@@ -16,8 +14,7 @@ public class ParameterTest {
 
     @Test
     public void parameterTest() {
-        SerializerProvider provider = serializerProvider();
-        PacketFactory factory = factory(provider);
+        PacketFactory factory = TestUtil.createFactory();
 
         DataVisitor visitor = new NettyDataVisitor(Unpooled.buffer());
 
@@ -35,14 +32,6 @@ public class ParameterTest {
         assert packetClone.contents.equals(packet.contents);
         assert packetClone.numbers.equals(packet.numbers);
         assert packetClone.nestedCollection.equals(packet.nestedCollection);
-    }
-
-    private SerializerProvider serializerProvider() {
-        return SerializerProviderBuilder.create().loadProvided().build();
-    }
-
-    private PacketFactory factory(SerializerProvider serializerProvider) {
-        return PacketFactoryBuilder.create(new Serializers.Integer(), serializerProvider).loadDefaults().build();
     }
 
 }

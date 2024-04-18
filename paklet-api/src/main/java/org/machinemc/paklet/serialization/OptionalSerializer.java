@@ -1,17 +1,23 @@
-package org.machinemc.paklet.serializers;
+package org.machinemc.paklet.serialization;
 
 import org.jetbrains.annotations.Nullable;
 import org.machinemc.paklet.DataVisitor;
-import org.machinemc.paklet.Serializer;
 
 /**
- * Wrapper for another serializer that provides functionality for {@link org.machinemc.paklet.modifiers.Optional}.
+ * Wrapper for another serializer that provides functionality for {@link org.machinemc.paklet.modifiers.Optional}
+ * modifier.
+ *
  * @param <T> type of wrapped serializer
  */
-class OptionalSerializer<T> implements Serializer<T> {
+final class OptionalSerializer<T> implements Serializer<T> {
 
     private final Serializer<T> wrapped;
 
+    /**
+     * New optional serializer wrapper for given serializer.
+     *
+     * @param of serializer
+     */
     public OptionalSerializer(Serializer<T> of) {
         wrapped = of;
     }

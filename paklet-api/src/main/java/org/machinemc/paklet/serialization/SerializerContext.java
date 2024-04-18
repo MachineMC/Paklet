@@ -1,8 +1,7 @@
-package org.machinemc.paklet.serializers;
+package org.machinemc.paklet.serialization;
 
 import org.jetbrains.annotations.Nullable;
 import org.machinemc.paklet.DataVisitor;
-import org.machinemc.paklet.Serializer;
 import org.machinemc.paklet.modifiers.Optional;
 import org.machinemc.paklet.modifiers.SerializeWith;
 
@@ -26,6 +25,18 @@ public record SerializerContext(@Nullable AnnotatedType annotatedType, Serialize
      */
     public SerializerContext withType(AnnotatedType annotatedType) {
         return new SerializerContext(annotatedType, serializerProvider);
+    }
+
+    /**
+     * Creates new copy of the serializer context for given token.
+     *
+     * @param token token implementation
+     * @return new context
+     * @see Token
+     */
+    public SerializerContext withType(Token<?> token) {
+        AnnotatedParameterizedType type = (AnnotatedParameterizedType) token.getClass().getAnnotatedSuperclass();
+        return withType(type.getAnnotatedActualTypeArguments()[0]);
     }
 
     /**

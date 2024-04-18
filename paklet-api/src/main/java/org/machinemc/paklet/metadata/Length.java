@@ -8,10 +8,10 @@ import java.lang.annotation.Target;
 /**
  * Used for limiting min and max length of certain elements.
  * <p>
- * By default, supported by {@link org.machinemc.paklet.serializers.Serializers.String},
- * {@link org.machinemc.paklet.serializers.Serializers.Collection},
- * {@link org.machinemc.paklet.serializers.Serializers.BitSet}, and
- * {@link org.machinemc.paklet.serializers.Serializers.Array}
+ * By default, supported by {@link org.machinemc.paklet.serialization.Serializers.String},
+ * {@link org.machinemc.paklet.serialization.Serializers.Collection},
+ * {@link org.machinemc.paklet.serialization.Serializers.BitSet}, and
+ * {@link org.machinemc.paklet.serialization.Serializers.Array}
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE_USE)

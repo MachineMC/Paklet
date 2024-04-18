@@ -1,14 +1,14 @@
 package org.machinemc.paklet;
 
-import org.machinemc.paklet.serializers.SerializerContext;
+import org.machinemc.paklet.serialization.SerializerContext;
 
 /**
  * Used internally to quickly read packets from data visitors.
  *
- * @param <T> packet
+ * @param <PacketType> packet
  */
 @FunctionalInterface
-public interface PacketReader<T /* Packet */> {
+public interface PacketReader<PacketType> {
 
     /**
      * Reads next packet from a data visitor.
@@ -17,6 +17,6 @@ public interface PacketReader<T /* Packet */> {
      * @param dataVisitor data visitor
      * @return packet
      */
-    T read(SerializerContext context, DataVisitor dataVisitor);
+    PacketType read(SerializerContext context, DataVisitor dataVisitor);
 
 }

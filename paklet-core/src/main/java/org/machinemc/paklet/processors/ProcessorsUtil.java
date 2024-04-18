@@ -1,9 +1,9 @@
 package org.machinemc.paklet.processors;
 
 import org.machinemc.paklet.DataVisitor;
-import org.machinemc.paklet.Serializer;
+import org.machinemc.paklet.serialization.Serializer;
 import org.machinemc.paklet.modifiers.Ignore;
-import org.machinemc.paklet.serializers.SerializerContext;
+import org.machinemc.paklet.serialization.SerializerContext;
 
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;

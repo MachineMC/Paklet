@@ -4,6 +4,9 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+/**
+ * Utility class that writes code for object conversion.
+ */
 public final class ConverterVisitor {
 
     private ConverterVisitor() {

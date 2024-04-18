@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.machinemc.paklet.*;
 import org.machinemc.paklet.netty.NettyDataVisitor;
 import org.machinemc.paklet.processors.*;
-import org.machinemc.paklet.serializers.SerializerProvider;
-import org.machinemc.paklet.serializers.Serializers;
 import org.machinemc.paklet.test.packet.ArrayPacket;
 import org.machinemc.paklet.test.packet.TestCustomLogicCustomPacket;
 import org.machinemc.paklet.test.packet.TestPacket;
@@ -32,8 +30,7 @@ public class ProcessorsTest {
 
     @Test
     public void basicTest() {
-        SerializerProvider provider = serializerProvider();
-        PacketFactory factory = factory(provider);
+        PacketFactory factory = TestUtil.createFactory();
 
         DataVisitor visitor = new NettyDataVisitor(Unpooled.buffer());
 
@@ -58,8 +55,7 @@ public class ProcessorsTest {
 
     @Test
     public void arrayTest() {
-        SerializerProvider provider = serializerProvider();
-        PacketFactory factory = factory(provider);
+        PacketFactory factory = TestUtil.createFactory();
 
         DataVisitor visitor = new NettyDataVisitor(Unpooled.buffer());
 
@@ -75,14 +71,6 @@ public class ProcessorsTest {
         assert Arrays.compare(arrayPacketClone.nestedArray[0], arrayPacket.nestedArray[0]) == 0;
         assert Arrays.compare(arrayPacketClone.nestedArray[1], arrayPacket.nestedArray[1]) == 0;
         assert Arrays.compare(arrayPacketClone.optionalElements, arrayPacket.optionalElements) == 0;
-    }
-
-    private SerializerProvider serializerProvider() {
-        return SerializerProviderBuilder.create().loadProvided().build();
-    }
-
-    private PacketFactory factory(SerializerProvider serializerProvider) {
-        return PacketFactoryBuilder.create(new Serializers.Integer(), serializerProvider).loadDefaults().build();
     }
 
 }

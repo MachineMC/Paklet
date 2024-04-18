@@ -1,14 +1,14 @@
 package org.machinemc.paklet;
 
-import org.machinemc.paklet.serializers.SerializerContext;
+import org.machinemc.paklet.serialization.SerializerContext;
 
 /**
  * Used to quickly write packets to a data visitors.
  *
- * @param <T> packet
+ * @param <Packet> packet
  */
 @FunctionalInterface
-public interface PacketWriter<T /* Packet */> {
+public interface PacketWriter<Packet> {
 
     /**
      * Writes next packet from to the data visitor.
@@ -17,6 +17,6 @@ public interface PacketWriter<T /* Packet */> {
      * @param dataVisitor data visitor
      * @param packet packet
      */
-    void write(SerializerContext context, DataVisitor dataVisitor, T packet);
+    void write(SerializerContext context, DataVisitor dataVisitor, Packet packet);
 
 }

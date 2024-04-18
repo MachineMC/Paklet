@@ -1,5 +1,8 @@
 package org.machinemc.paklet.utils;
 
+/**
+ * Utility class that unboxes the primitive types.
+ */
 public final class Unboxer {
 
     private Unboxer() {

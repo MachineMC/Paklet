@@ -14,6 +14,15 @@ public class NettyDataVisitor implements DataVisitor {
         delegate = buf;
     }
 
+    /**
+     * Returns the wrapped byte buffer.
+     *
+     * @return byte buffer
+     */
+    public ByteBuf getByteBuf() {
+        return delegate;
+    }
+
     @Override
     public byte[] readBytes(int length) {
         byte[] bytes = new byte[length];

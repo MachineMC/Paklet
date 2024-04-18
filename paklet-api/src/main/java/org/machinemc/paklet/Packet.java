@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  * between server and client.
  * <p>
  * All fields (except for transient or those marked as optional) are
- * serialized with either default or provided serializers.
+ * serialized with either default or specified serializers.
  * <p>
  * Each packet needs to have its own ID and group. In each group there can be
  * only a single packet with the same ID.
@@ -50,11 +50,27 @@ public @interface Packet {
      *
      * @return ID of the packet
      */
-    int value();
+    int id();
 
     /**
+     * Represents a group of the packet.
+     * <p>
+     * Packets can be split to multiple groups, multiple packets in different groups can have same packet IDs.
+     * <p>
+     * Compare to packet IDs, packets do not store information about their groups when
+     * they are serialized using {@link PacketFactory}.
+     *
      * @return group of the packet
      */
     String group() default DEFAULT;
+
+    /**
+     * Specifies class that is used as catalogue (identifier) for the packet.
+     * <p>
+     * All packets within the same catalogue can be easily and automatically registered.
+     *
+     * @return catalogue source of the packet
+     */
+    Class<?> catalogue();
 
 }

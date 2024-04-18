@@ -1,6 +1,6 @@
 package org.machinemc.paklet.modifiers;
 
-import org.machinemc.paklet.Serializer;
+import org.machinemc.paklet.serialization.Serializer;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
