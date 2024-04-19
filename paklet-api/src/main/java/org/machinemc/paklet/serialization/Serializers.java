@@ -192,8 +192,9 @@ public class Serializers {
             Serializer<java.lang.Integer> intSerializer = context.serializerProvider().getFor(java.lang.Integer.class);
             visitor.write(context, intSerializer, size);
 
+            Serializer<Object> paramSerializer = paramContext.serializeWith();
             for (Object object : objects)
-                SerializerContext.serializeWith(paramContext, visitor, object);
+                paramSerializer.serialize(paramContext, visitor, object);
         }
 
         @Override
@@ -209,8 +210,9 @@ public class Serializers {
             if (context.annotatedType() == null) objects = new ArrayList<>();
             else objects = createCollectionFromType(context.annotatedType().getType());
 
+            Serializer<Object> paramSerializer = paramContext.serializeWith();
             for (int i = 0; i < size; i++)
-                objects.add(SerializerContext.deserializeWith(paramContext, visitor));
+                objects.add(paramSerializer.deserialize(paramContext, visitor));
 
             return objects;
         }
@@ -374,8 +376,10 @@ public class Serializers {
 
             AnnotatedType componentType = ((AnnotatedArrayType) context.annotatedType()).getAnnotatedGenericComponentType();
             SerializerContext componentContext = context.withType(componentType);
+
+            Serializer<Object> componentSerializer = componentContext.serializeWith();
             for (int i = 0; i < length; i++)
-                SerializerContext.serializeWith(componentContext, visitor, java.lang.reflect.Array.get(object, i));
+                componentSerializer.serialize(componentContext, visitor, java.lang.reflect.Array.get(object, i));
         }
 
         @Override
@@ -390,8 +394,10 @@ public class Serializers {
 
             AnnotatedType componentType = ((AnnotatedArrayType) context.annotatedType()).getAnnotatedGenericComponentType();
             SerializerContext componentContext = context.withType(componentType);
+
+            Serializer<Object> componentSerializer = componentContext.serializeWith();
             for (int i = 0; i < length; i++)
-                java.lang.reflect.Array.set(array, i, SerializerContext.deserializeWith(componentContext, visitor));
+                java.lang.reflect.Array.set(array, i, componentSerializer.deserialize(componentContext, visitor));
 
             return array;
         }

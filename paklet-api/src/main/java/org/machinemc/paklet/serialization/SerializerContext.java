@@ -1,7 +1,6 @@
 package org.machinemc.paklet.serialization;
 
 import org.jetbrains.annotations.Nullable;
-import org.machinemc.paklet.DataVisitor;
 import org.machinemc.paklet.modifiers.Optional;
 import org.machinemc.paklet.modifiers.SerializeWith;
 
@@ -40,43 +39,13 @@ public record SerializerContext(@Nullable AnnotatedType annotatedType, Serialize
     }
 
     /**
-     * Serializes the provided object to the data visitor within given context.
-     * <p>
-     * This is used for serialization of parameterized types such as List or Map.
-     *
-     * @param with context to use; for parameters should be used {@link #getContextForParameter(int)}
-     * @param visitor visitor to serialize to
-     * @param object object to serialize
-     * @param <T> object
-     */
-    @SuppressWarnings("unchecked")
-    public static <T> void serializeWith(SerializerContext with, DataVisitor visitor, T object) {
-        Serializer<T> serializer = (Serializer<T>) with.serializeWith();
-        serializer.serialize(with, visitor, object);
-    }
-
-    /**
-     * Deserializes the provided object from the data visitor within given context.
-     * <p>
-     * This is used for deserialization of parameterized types such as List or Map.
-     *
-     * @param with context to use, {@link #getContextForParameter(int)}
-     * @param visitor visitor to deserialize from
-     * @return deserialized object
-     * @param <T> object
-     */
-    @SuppressWarnings("unchecked")
-    public static <T> T deserializeWith(SerializerContext with, DataVisitor visitor) {
-        Serializer<T> serializer = (Serializer<T>) with.serializeWith();
-        return serializer.deserialize(with, visitor);
-    }
-
-    /**
      * Returns serializer that is used for serializing type of this context.
      *
      * @return serializer
+     * @param <T> type
      */
-    public Serializer<?> serializeWith() {
+    @SuppressWarnings("unchecked")
+    public <T> Serializer<T> serializeWith() {
         if (annotatedType == null) throw new UnsupportedOperationException("Currently no type is being serialized");
 
         Serializer<?> serializer;
@@ -87,9 +56,9 @@ public record SerializerContext(@Nullable AnnotatedType annotatedType, Serialize
             serializer = serializerProvider.getOf(asClass(annotatedType.getAnnotation(SerializeWith.class).value()));
 
         if (annotatedType.isAnnotationPresent(Optional.class))
-            return new OptionalSerializer<>(serializer);
+            return (Serializer<T>) new OptionalSerializer<>(serializer);
 
-        return serializer;
+        return (Serializer<T>) serializer;
     }
 
     /**

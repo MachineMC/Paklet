@@ -62,10 +62,9 @@ public final class ProcessorsUtil {
         return context.serializeWith().deserialize(context, visitor.readOnly());
     }
 
-    @SuppressWarnings("unchecked")
     public static void setValueForField(SerializerContext context, DataVisitor visitor, Class<?> packet, String name, Object value) {
         context = createContextForField(context, packet, name);
-        Serializer<Object> serializer = (Serializer<Object>) context.serializeWith();
+        Serializer<Object> serializer = context.serializeWith();
         serializer.serialize(context, visitor.writeOnly(), value);
     }
 
