@@ -36,8 +36,8 @@ public class ProxyWriterCreator implements WriterCreator {
                 T instance = (T) args[2];
 
                 for (Field field : fields) {
-                    Object value = ProcessorsUtil.getValueForField(context, visitor, packet, field.getName());
-                    field.set(instance, value);
+                    Object value = field.get(instance);
+                    ProcessorsUtil.setValueForField(context, visitor, packet, field.getName(), value);
                 }
                 return instance;
             });

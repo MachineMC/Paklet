@@ -14,10 +14,6 @@ dependencies {
     testAnnotationProcessor(project(":paklet-processor"))
 }
 
-paklet {
-    testEnvironment = true
-}
-
 publishing {
     repositories {
         maven {

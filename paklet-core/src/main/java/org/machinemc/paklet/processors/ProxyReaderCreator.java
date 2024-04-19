@@ -38,8 +38,8 @@ public class ProxyReaderCreator implements ReaderCreator {
 
                 T instance = constructor.newInstance();
                 for (Field field : fields) {
-                    Object value = field.get(instance);
-                    ProcessorsUtil.setValueForField(context, visitor, packet, field.getName(), value);
+                    Object value = ProcessorsUtil.getValueForField(context, visitor, packet, field.getName());
+                    field.set(instance, value);
                 }
                 return instance;
             });

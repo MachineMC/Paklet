@@ -11,7 +11,7 @@ import org.machinemc.paklet.serialization.SerializerContext;
 public interface PacketWriter<Packet> {
 
     /**
-     * Writes next packet from to the data visitor.
+     * Writes next packet to the data visitor.
      *
      * @param context context
      * @param dataVisitor data visitor
