@@ -1,9 +1,11 @@
 package org.machinemc.paklet.serialization;
 
+import org.jetbrains.annotations.Unmodifiable;
 import org.machinemc.paklet.serialization.catalogue.DynamicCatalogue;
 import org.machinemc.paklet.serialization.rule.SerializationRule;
 
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.function.Function;
 
 /**
@@ -139,6 +141,21 @@ public interface SerializerProvider {
      * @return whether the rule was removed
      */
     <T extends SerializationRule> boolean removeSerializationRule(Class<T> ruleClass);
+
+    /**
+     * Returns collection of all currently registered serializers.
+     *
+     * @return collection of registered serializers
+     */
+    @Unmodifiable
+    Collection<Serializer<?>> getRegisteredSerializers();
+
+    /**
+     * Returns collection of all currently registered serialization rules.
+     *
+     * @return collection of registered serialization rules
+     */
+    @Unmodifiable Collection<SerializationRule> getRegisteredSerializationRules();
 
     /**
      * Returns default serializer for given type.

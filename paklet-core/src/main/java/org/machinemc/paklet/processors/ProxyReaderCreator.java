@@ -16,7 +16,8 @@ public class ProxyReaderCreator implements ReaderCreator {
     @SuppressWarnings("unchecked")
     public <T> PacketReader<T> create(Class<T> packet) {
         try {
-            Constructor<T> constructor = packet.getConstructor();
+            Constructor<T> constructor = packet.getDeclaredConstructor();
+            constructor.setAccessible(true);
             List<Field> fields = ProcessorsUtil.collectSerializableFields(packet);
             fields.forEach(field -> field.setAccessible(true));
             return (PacketReader<T>) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[]{PacketReader.class}, (proxy, method, args) -> {

@@ -14,7 +14,6 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class PacketFactoryImpl implements PacketFactory {
 
@@ -106,9 +105,8 @@ public class PacketFactoryImpl implements PacketFactory {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <PacketType> @Unmodifiable Collection<Class<PacketType>> getRegisteredPackets() {
-        return packet2Group.keySet().stream().map(c -> (Class<PacketType>) c).collect(Collectors.toSet());
+    public @Unmodifiable Collection<Class<?>> getRegisteredPackets() {
+        return Collections.unmodifiableSet(packet2Group.keySet());
     }
 
     @Override

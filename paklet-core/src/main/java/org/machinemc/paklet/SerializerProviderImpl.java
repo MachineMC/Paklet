@@ -1,5 +1,6 @@
 package org.machinemc.paklet;
 
+import org.jetbrains.annotations.Unmodifiable;
 import org.machinemc.paklet.serialization.NoSuchSerializerException;
 import org.machinemc.paklet.serialization.Serializer;
 import org.machinemc.paklet.serialization.Supports;
@@ -46,10 +47,11 @@ public class SerializerProviderImpl implements SerializerProvider {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T extends Serializer<?>> void addSerializer(Class<T> serializerClass) {
         try {
-            addSerializer((Serializer<T>) serializerClass.getConstructor().newInstance());
+            Constructor<T> constructor = serializerClass.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            addSerializer((Serializer<?>) constructor.newInstance());
         } catch (Exception exception) {
             throw new RuntimeException(exception);
         }
@@ -61,10 +63,13 @@ public class SerializerProviderImpl implements SerializerProvider {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <Catalogue> void addSerializers(Class<Catalogue> catalogueClass, Function<String, InputStream> resourcesAccessor) {
         if (DynamicCatalogue.Serializers.class.isAssignableFrom(catalogueClass)) {
             try {
-                addSerializers((DynamicCatalogue.Serializers) catalogueClass.getConstructor().newInstance());
+                Constructor<Catalogue> constructor = catalogueClass.getDeclaredConstructor();
+                constructor.setAccessible(true);
+                addSerializers((DynamicCatalogue.Serializers) constructor.newInstance());
                 return;
             } catch (Exception exception) {
                 throw new RuntimeException(exception);
@@ -73,10 +78,7 @@ public class SerializerProviderImpl implements SerializerProvider {
 
         try {
             List<Class<?>> classes = CatalogueUtils.getClassesOfCatalogue(catalogueClass, "serializers", resourcesAccessor);
-            for (Class<?> clazz : classes) {
-                Serializer<?> serializer = (Serializer<?>) clazz.getConstructor().newInstance();
-                addSerializer(serializer);
-            }
+            for (Class<?> clazz : classes) addSerializer((Class<? extends Serializer<?>>) clazz);
         } catch (Exception exception) {
             throw new RuntimeException(exception);
         }
@@ -105,7 +107,9 @@ public class SerializerProviderImpl implements SerializerProvider {
     @Override
     public <T extends SerializationRule> void addSerializationRule(Class<T> ruleClass) {
         try {
-            addSerializationRule(ruleClass.getConstructor().newInstance());
+            Constructor<T> constructor = ruleClass.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            addSerializationRule(constructor.newInstance());
         } catch (Exception exception) {
             throw new RuntimeException(exception);
         }
@@ -117,10 +121,13 @@ public class SerializerProviderImpl implements SerializerProvider {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <Catalogue> void addSerializationRules(Class<Catalogue> catalogueClass, Function<String, InputStream> resourcesAccessor) {
         if (DynamicCatalogue.SerializationRules.class.isAssignableFrom(catalogueClass)) {
             try {
-                addSerializationRules((DynamicCatalogue.SerializationRules) catalogueClass.getConstructor().newInstance());
+                Constructor<Catalogue> constructor = catalogueClass.getDeclaredConstructor();
+                constructor.setAccessible(true);
+                addSerializationRules((DynamicCatalogue.SerializationRules) constructor.newInstance());
                 return;
             } catch (Exception exception) {
                 throw new RuntimeException(exception);
@@ -129,10 +136,7 @@ public class SerializerProviderImpl implements SerializerProvider {
 
         try {
             List<Class<?>> classes = CatalogueUtils.getClassesOfCatalogue(catalogueClass, "rules", resourcesAccessor);
-            for (Class<?> clazz : classes) {
-                SerializationRule rule = (SerializationRule) clazz.getConstructor().newInstance();
-                addSerializationRule(rule);
-            }
+            for (Class<?> clazz : classes) addSerializationRule((Class<? extends SerializationRule>) clazz);
         } catch (Exception exception) {
             throw new RuntimeException(exception);
         }
@@ -154,6 +158,16 @@ public class SerializerProviderImpl implements SerializerProvider {
         if (toRemove.isEmpty()) return false;
         toRemove.forEach(rules::remove);
         return true;
+    }
+
+    @Override
+    public @Unmodifiable Collection<Serializer<?>> getRegisteredSerializers() {
+        return Collections.unmodifiableCollection(types2Serializers.values());
+    }
+
+    @Override
+    public @Unmodifiable Collection<SerializationRule> getRegisteredSerializationRules() {
+        return Collections.unmodifiableSet(rules);
     }
 
     @Override

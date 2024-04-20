@@ -156,9 +156,8 @@ public interface PacketFactory {
      * Returns collection of all currently registered packets.
      *
      * @return collection of registered packets
-     * @param <PacketType> packet
      */
-    <PacketType> @Unmodifiable Collection<Class<PacketType>> getRegisteredPackets();
+    @Unmodifiable Collection<Class<?>> getRegisteredPackets();
 
     /**
      * Creates new packet instance from given group and data (with packet ID).
