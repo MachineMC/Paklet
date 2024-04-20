@@ -2,8 +2,10 @@ package org.machinemc.paklet;
 
 import org.jetbrains.annotations.Unmodifiable;
 
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Factory managing packet writers and readers for serializing and deserializing packets.
@@ -60,6 +62,21 @@ public interface PacketFactory {
      * @throws IllegalArgumentException if packet with the same ID and group is already registered
      */
     <Catalogue> void addPackets(Class<Catalogue> catalogueClass);
+
+    /**
+     * Adds all packets from a catalogue.
+     * <p>
+     * This method allows to customize getting the resource input stream. This can be used
+     * on platforms such as Bukkit or Spring where the standard way how accessing resources
+     * does not work.
+     *
+     * @param catalogueClass class of the catalogue
+     * @param resourcesAccessor function mapping path to resource input stream
+     * @param <Catalogue> catalogue
+     *
+     * @throws IllegalArgumentException if packet with the same ID and group is already registered
+     */
+    <Catalogue> void addPackets(Class<Catalogue> catalogueClass, Function<String, InputStream> resourcesAccessor);
 
     /**
      * Removes packet with given type.

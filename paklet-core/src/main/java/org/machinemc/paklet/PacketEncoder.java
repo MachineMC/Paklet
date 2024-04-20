@@ -2,6 +2,8 @@ package org.machinemc.paklet;
 
 import io.netty.buffer.Unpooled;
 import org.machinemc.paklet.netty.NettyDataVisitor;
+import org.machinemc.paklet.serialization.SerializerContext;
+import org.machinemc.paklet.serialization.SerializerProvider;
 import org.machinemc.paklet.serialization.VarIntSerializer;
 
 import java.util.Objects;
@@ -28,19 +30,21 @@ public interface PacketEncoder {
      * Encodes the packet to the target data visitor.
      *
      * @param target target
+     * @param serializerProvider serializer provider
      * @param group provided packet group
      * @param encoded encoded packet
      */
-    void encode(DataVisitor target, String group, Encoded encoded);
+    void encode(DataVisitor target, SerializerProvider serializerProvider, String group, Encoded encoded);
 
     /**
      * Decodes packet from the source data visitor.
      *
      * @param source source
+     * @param serializerProvider serializer provider
      * @param group provided packet group
      * @return decoded packet
      */
-    Encoded decode(DataVisitor source, String group);
+    Encoded decode(DataVisitor source, SerializerProvider serializerProvider, String group);
 
     /**
      * Represents encoded packet.
@@ -64,14 +68,16 @@ class VarIntPacketEncoder implements PacketEncoder {
     private final VarIntSerializer serializer = new VarIntSerializer();
 
     @Override
-    public void encode(DataVisitor target, String group, Encoded encoded) {
-        serializer.serialize(null, target, encoded.packetID());
+    public void encode(DataVisitor target, SerializerProvider serializerProvider, String group, Encoded encoded) {
+        SerializerContext context = new SerializerContext(null, serializerProvider);
+        serializer.serialize(context, target, encoded.packetID());
         target.write(encoded.packetData());
     }
 
     @Override
-    public Encoded decode(DataVisitor source, String group) {
-        int packetID = serializer.deserialize(null, source);
+    public Encoded decode(DataVisitor source, SerializerProvider serializerProvider, String group) {
+        SerializerContext context = new SerializerContext(null, serializerProvider);
+        int packetID = serializer.deserialize(context, source);
         DataVisitor packetData = new NettyDataVisitor(Unpooled.buffer());
         packetData.write(source);
         return new Encoded(packetID, packetData);

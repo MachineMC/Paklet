@@ -3,6 +3,9 @@ package org.machinemc.paklet.serialization;
 import org.machinemc.paklet.serialization.catalogue.DynamicCatalogue;
 import org.machinemc.paklet.serialization.rule.SerializationRule;
 
+import java.io.InputStream;
+import java.util.function.Function;
+
 /**
  * Provider of serializers used in current context.
  */
@@ -39,6 +42,21 @@ public interface SerializerProvider {
      * @throws IllegalArgumentException if serializer for same type already exists
      */
     <Catalogue> void addSerializers(Class<Catalogue> catalogueClass);
+
+    /**
+     * Adds all serializers from a catalogue.
+     * <p>
+     * This method allows to customize getting the resource input stream. This can be used
+     * on platforms such as Bukkit or Spring where the standard way how accessing resources
+     * does not work.
+     *
+     * @param catalogueClass class of the catalogue
+     * @param resourcesAccessor function mapping path to resource input stream
+     * @param <Catalogue> catalogue
+     *
+     * @throws IllegalArgumentException if serializer for same type already exists
+     */
+    <Catalogue> void addSerializers(Class<Catalogue> catalogueClass, Function<String, InputStream> resourcesAccessor);
 
     /**
      * Adds all serializers from dynamic catalogue.
@@ -82,6 +100,19 @@ public interface SerializerProvider {
      * @param <Catalogue> catalogue
      */
     <Catalogue> void addSerializationRules(Class<Catalogue> catalogueClass);
+
+    /**
+     * Adds all serialization rules from a catalogue.
+     * <p>
+     * This method allows to customize getting the resource input stream. This can be used
+     * on platforms such as Bukkit or Spring where the standard way how accessing resources
+     * does not work.
+     *
+     * @param catalogueClass class of the catalogue
+     * @param resourcesAccessor function mapping path to resource input stream
+     * @param <Catalogue> catalogue
+     */
+    <Catalogue> void addSerializationRules(Class<Catalogue> catalogueClass, Function<String, InputStream> resourcesAccessor);
 
     /**
      * Adds all serialization rules from dynamic catalogue.

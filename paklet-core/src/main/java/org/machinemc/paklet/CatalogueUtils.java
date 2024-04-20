@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Utilities for operation with catalogues system.
@@ -19,9 +20,9 @@ final class CatalogueUtils {
         throw new UnsupportedOperationException();
     }
 
-    public static JsonObject getCatalogueForClass(Class<?> catalogueClass) {
+    public static JsonObject getCatalogueForClass(Class<?> catalogueClass, Function<String, InputStream> resourcesAccessor) {
         String path = "/" + catalogueClass.getName().replace('.', '/') + "_catalogue.json";
-        try (InputStream is = SerializerProviderImpl.class.getResourceAsStream(path)) {
+        try (InputStream is = resourcesAccessor.apply(path)) {
             if (is == null) throw new NullPointerException();
             return JsonParser.parseReader(new InputStreamReader(is)).getAsJsonObject();
         } catch (Exception exception) {
@@ -29,8 +30,10 @@ final class CatalogueUtils {
         }
     }
 
-    public static List<Class<?>> getClassesOfCatalogue(Class<?> catalogueClass, String type) throws ClassNotFoundException {
-        JsonObject json = getCatalogueForClass(catalogueClass);
+    public static List<Class<?>> getClassesOfCatalogue(Class<?> catalogueClass,
+                                                       String type,
+                                                       Function<String, InputStream> resourcesAccessor) throws ClassNotFoundException {
+        JsonObject json = getCatalogueForClass(catalogueClass, resourcesAccessor);
         JsonArray array = json.getAsJsonArray(type);
         List<Class<?>> classes = new ArrayList<>();
         for (JsonElement element : array) {

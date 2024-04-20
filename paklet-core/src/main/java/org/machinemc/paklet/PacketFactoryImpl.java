@@ -8,10 +8,12 @@ import org.machinemc.paklet.processors.*;
 import org.machinemc.paklet.serialization.SerializerContext;
 import org.machinemc.paklet.serialization.SerializerProvider;
 
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class PacketFactoryImpl implements PacketFactory {
@@ -65,8 +67,13 @@ public class PacketFactoryImpl implements PacketFactory {
 
     @Override
     public <Catalogue> void addPackets(Class<Catalogue> catalogueClass) {
+        addPackets(catalogueClass, catalogueClass::getResourceAsStream);
+    }
+
+    @Override
+    public <Catalogue> void addPackets(Class<Catalogue> catalogueClass, Function<String, InputStream> resourcesAccessor) {
         try {
-            List<Class<?>> classes = CatalogueUtils.getClassesOfCatalogue(catalogueClass, "packets");
+            List<Class<?>> classes = CatalogueUtils.getClassesOfCatalogue(catalogueClass, "packets", resourcesAccessor);
             classes.forEach(this::addPacket);
         } catch (Exception exception) {
             throw new RuntimeException(exception);
@@ -106,7 +113,7 @@ public class PacketFactoryImpl implements PacketFactory {
 
     @Override
     public <PacketType> PacketType create(String group, DataVisitor visitor) {
-        PacketEncoder.Encoded decoded = encoder.decode(visitor, group);
+        PacketEncoder.Encoded decoded = encoder.decode(visitor, serializerProvider, group);
         return create(decoded.packetID(), group, decoded.packetData());
     }
 
@@ -145,7 +152,7 @@ public class PacketFactoryImpl implements PacketFactory {
         DataVisitor packetData = new NettyDataVisitor(Unpooled.buffer());
         writer.write(context, packetData, packet);
 
-        encoder.encode(visitor, packetGroup.getName(), new PacketEncoder.Encoded(packetID, packetData));
+        encoder.encode(visitor, serializerProvider, packetGroup.getName(), new PacketEncoder.Encoded(packetID, packetData));
     }
 
     private int computePacketID(Class<?> packetClass) {

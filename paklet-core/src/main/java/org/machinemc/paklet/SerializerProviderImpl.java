@@ -7,8 +7,11 @@ import org.machinemc.paklet.serialization.catalogue.DynamicCatalogue;
 import org.machinemc.paklet.serialization.rule.SerializationRule;
 import org.machinemc.paklet.serialization.SerializerProvider;
 
+import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * Default implementation of serializer provider.
@@ -22,6 +25,10 @@ public class SerializerProviderImpl implements SerializerProvider {
 
     private final Set<SerializationRule> rules = new LinkedHashSet<>();
 
+    // map of serializers that are not registered but had been previously
+    // resolved by #getOf
+    private final Map<Class<?>, Serializer<?>> cachedSerializers = new ConcurrentHashMap<>();
+
     @Override
     public <T> void addSerializer(Serializer<T> serializer) {
         if (types2Serializers.containsKey(serializer.getClass())) return;
@@ -34,6 +41,8 @@ public class SerializerProviderImpl implements SerializerProvider {
 
         types2Serializers.put(serializer.getClass(), serializer);
         Arrays.stream(supported).forEach(supportedType -> supported2Serializers.put(supportedType, serializer));
+
+        cachedSerializers.remove(serializer.getClass());
     }
 
     @Override
@@ -48,6 +57,11 @@ public class SerializerProviderImpl implements SerializerProvider {
 
     @Override
     public <Catalogue> void addSerializers(Class<Catalogue> catalogueClass) {
+        addSerializers(catalogueClass, catalogueClass::getResourceAsStream);
+    }
+
+    @Override
+    public <Catalogue> void addSerializers(Class<Catalogue> catalogueClass, Function<String, InputStream> resourcesAccessor) {
         if (DynamicCatalogue.Serializers.class.isAssignableFrom(catalogueClass)) {
             try {
                 addSerializers((DynamicCatalogue.Serializers) catalogueClass.getConstructor().newInstance());
@@ -58,7 +72,7 @@ public class SerializerProviderImpl implements SerializerProvider {
         }
 
         try {
-            List<Class<?>> classes = CatalogueUtils.getClassesOfCatalogue(catalogueClass, "serializers");
+            List<Class<?>> classes = CatalogueUtils.getClassesOfCatalogue(catalogueClass, "serializers", resourcesAccessor);
             for (Class<?> clazz : classes) {
                 Serializer<?> serializer = (Serializer<?>) clazz.getConstructor().newInstance();
                 addSerializer(serializer);
@@ -99,6 +113,11 @@ public class SerializerProviderImpl implements SerializerProvider {
 
     @Override
     public <Catalogue> void addSerializationRules(Class<Catalogue> catalogueClass) {
+        addSerializationRules(catalogueClass, catalogueClass::getResourceAsStream);
+    }
+
+    @Override
+    public <Catalogue> void addSerializationRules(Class<Catalogue> catalogueClass, Function<String, InputStream> resourcesAccessor) {
         if (DynamicCatalogue.SerializationRules.class.isAssignableFrom(catalogueClass)) {
             try {
                 addSerializationRules((DynamicCatalogue.SerializationRules) catalogueClass.getConstructor().newInstance());
@@ -109,7 +128,7 @@ public class SerializerProviderImpl implements SerializerProvider {
         }
 
         try {
-            List<Class<?>> classes = CatalogueUtils.getClassesOfCatalogue(catalogueClass, "rules");
+            List<Class<?>> classes = CatalogueUtils.getClassesOfCatalogue(catalogueClass, "rules", resourcesAccessor);
             for (Class<?> clazz : classes) {
                 SerializationRule rule = (SerializationRule) clazz.getConstructor().newInstance();
                 addSerializationRule(rule);
@@ -150,16 +169,25 @@ public class SerializerProviderImpl implements SerializerProvider {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T extends Serializer<?>> T getOf(Class<T> clazz) throws NoSuchSerializerException {
-        if (types2Serializers.containsKey(clazz))
-            types2Serializers.get(clazz);
         T serializer;
+
+        serializer = (T) types2Serializers.get(clazz);
+        if (serializer != null) return serializer;
+
+        serializer = (T) cachedSerializers.get(clazz);
+        if (serializer != null) return serializer;
+
         try {
-            serializer = clazz.getConstructor().newInstance();
+            Constructor<T> constructor = clazz.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            serializer = constructor.newInstance();
         } catch (Exception exception) {
             throw new RuntimeException("Failed to initiate " + clazz.getName() + " serializer because it has no default constructor");
         }
-        types2Serializers.put(clazz, serializer);
+
+        cachedSerializers.put(clazz, serializer);
         return serializer;
     }
 
