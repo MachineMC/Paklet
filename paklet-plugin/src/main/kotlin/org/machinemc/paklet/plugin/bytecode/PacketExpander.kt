@@ -12,12 +12,18 @@ import java.io.File
  */
 class PacketExpander(file: File) {
 
+    /**
+     * Class representing field of a class.
+     */
     data class Field(val name: String, val type: Type)
 
     private lateinit var type: Type
     private var id = -1
     private val fields: MutableList<Field> = ArrayList()
 
+    /**
+     * Process of the verification and further bytecode modification.
+     */
     init {
         PluginUtils.readClass(file, PacketExtractor())
         PluginUtils.readClass(file, FieldExtractor())
@@ -25,6 +31,9 @@ class PacketExpander(file: File) {
         PluginUtils.readClassAndModify(file, GetterSetterInjector()) { visitor -> visitor.toByteArray() }
     }
 
+    /**
+     * Class visitor that verifies whether the class is applicable for packet modification.
+     */
     inner class PacketExtractor : ClassVisitor(ASM9) {
 
         private var noArgsConstructor = false
@@ -57,6 +66,9 @@ class PacketExpander(file: File) {
             super.visitEnd()
         }
 
+        /**
+         * Annotation visitor that saves the packet ID.
+         */
         inner class AnnotationExtractor(delegate: AnnotationVisitor?) : AnnotationVisitor(ASM9, delegate) {
 
             override fun visit(name: String?, value: Any?) {
@@ -68,6 +80,9 @@ class PacketExpander(file: File) {
 
     }
 
+    /**
+     * Class visitors that saves all fields of a packet class that will be used for packet serialization.
+     */
     inner class FieldExtractor : ClassVisitor(ASM9) {
 
         private var lastField: Field? = null
@@ -79,6 +94,9 @@ class PacketExpander(file: File) {
             return AnnotationChecker(super.visitField(access, name, descriptor, signature, value))
         }
 
+        /**
+         * Annotation visitor that checks for Ignore annotation for fields that should not be serialized.
+         */
         inner class AnnotationChecker(delegate: FieldVisitor?) : FieldVisitor(ASM9, delegate) {
 
             private var ignored = false
@@ -99,6 +117,9 @@ class PacketExpander(file: File) {
 
     }
 
+    /**
+     * Class visitor that removes the old generated methods if found.
+     */
     inner class OldMethodRemover : ClassVisitor(ASM9, ClassWriter(ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES)) {
 
         override fun visitMethod(access: Int, name: String?, descriptor: String?, signature: String?, exceptions: Array<out String>?): MethodVisitor? {
@@ -113,6 +134,9 @@ class PacketExpander(file: File) {
 
     }
 
+    /**
+     * Class visitor that adds the invisible getter and setter methods used during the serialization.
+     */
     inner class GetterSetterInjector : ClassVisitor(ASM9, ClassWriter(ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES)) {
 
         override fun visit(version: Int, access: Int, name: String?, signature: String?, superName: String?, interfaces: Array<out String>?) {

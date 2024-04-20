@@ -15,6 +15,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
+/**
+ * Default implementation of packet factory.
+ */
 public class PacketFactoryImpl implements PacketFactory {
 
     private final PacketEncoder encoder;

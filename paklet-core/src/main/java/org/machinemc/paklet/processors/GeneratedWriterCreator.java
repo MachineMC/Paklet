@@ -13,6 +13,14 @@ import java.lang.reflect.Field;
 
 import static org.objectweb.asm.Opcodes.*;
 
+/**
+ * Writer creator that generates class during runtime that utilize the
+ * bytecode modification done by the Paklet plugin.
+ * <p>
+ * The serialization of those packets is fully automatic and uses no reflection.
+ * <p>
+ * This is the default provided writer for packets that were modified by the Paklet plugin.
+ */
 public class GeneratedWriterCreator implements WriterCreator {
 
     @Override

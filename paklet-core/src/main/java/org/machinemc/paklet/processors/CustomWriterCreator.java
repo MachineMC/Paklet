@@ -14,6 +14,12 @@ import java.util.Arrays;
 import static org.objectweb.asm.Opcodes.*;
 import static org.objectweb.asm.Opcodes.RETURN;
 
+/**
+ * Writer creator that generates class during runtime that utilize the
+ * logic implemented by the user.
+ * <p>
+ * This is the default provided writer for packets that implement {@link CustomPacket}.
+ */
 public class CustomWriterCreator implements WriterCreator {
 
     @Override

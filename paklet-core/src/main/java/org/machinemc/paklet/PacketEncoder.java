@@ -63,6 +63,11 @@ public interface PacketEncoder {
 
 }
 
+/**
+ * VarInt packet encoder.
+ *
+ * @see PacketEncoder#varInt()
+ */
 class VarIntPacketEncoder implements PacketEncoder {
 
     private final VarIntSerializer serializer = new VarIntSerializer();

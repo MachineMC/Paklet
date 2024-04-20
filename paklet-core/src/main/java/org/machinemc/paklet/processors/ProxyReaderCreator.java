@@ -10,6 +10,12 @@ import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Reader creator that uses reflection and proxy.
+ * <p>
+ * This is the default provided reader for packets that do not implement custom serialization logic
+ * and were not modified by the Paklet plugin.
+ */
 public class ProxyReaderCreator implements ReaderCreator {
 
     @Override

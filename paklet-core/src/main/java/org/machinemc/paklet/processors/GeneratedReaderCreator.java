@@ -14,6 +14,14 @@ import java.lang.reflect.Field;
 import static org.objectweb.asm.Opcodes.*;
 import static org.objectweb.asm.Opcodes.ARETURN;
 
+/**
+ * Reader creator that generates class during runtime that utilize the
+ * bytecode modification done by the Paklet plugin.
+ * <p>
+ * The serialization of those packets is fully automatic and uses no reflection.
+ * <p>
+ * This is the default provided reader for packets that were modified by the Paklet plugin.
+ */
 public class GeneratedReaderCreator implements ReaderCreator {
 
     @Override

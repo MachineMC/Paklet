@@ -9,6 +9,12 @@ import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Writer creator that uses reflection and proxy.
+ * <p>
+ * This is the default provided writer for packets that do not implement custom serialization logic
+ * and were not modified by the Paklet plugin.
+ */
 public class ProxyWriterCreator implements WriterCreator {
 
     @Override
