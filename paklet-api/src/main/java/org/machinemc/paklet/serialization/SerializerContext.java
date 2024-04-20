@@ -3,7 +3,9 @@ package org.machinemc.paklet.serialization;
 import org.jetbrains.annotations.Nullable;
 import org.machinemc.paklet.modifiers.Optional;
 import org.machinemc.paklet.modifiers.SerializeWith;
+import org.machinemc.paklet.serialization.aliases.SerializerAlias;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.LinkedList;
 import java.util.List;
@@ -50,13 +52,26 @@ public record SerializerContext(@Nullable AnnotatedType annotatedType, Serialize
 
         Serializer<?> serializer;
 
-        if (!annotatedType.isAnnotationPresent(SerializeWith.class))
-            serializer = serializerProvider.getFor(asClass(annotatedType.getType()));
-        else
+        if (annotatedType.isAnnotationPresent(SerializeWith.class)) {
             serializer = serializerProvider.getOf(asClass(annotatedType.getAnnotation(SerializeWith.class).value()));
+        } else {
+            @Nullable Annotation found = null;
+            for (Annotation next : annotatedType.getAnnotations()) {
+                if (!next.annotationType().isAnnotationPresent(SerializerAlias.class)) continue;
+                found = next;
+                break;
+            }
+
+            if (found != null) {
+                serializer = serializerProvider.getOf(asClass(found.annotationType().getAnnotation(SerializerAlias.class).value()));
+            } else {
+                serializer = serializerProvider.getFor(asClass(annotatedType.getType()));
+            }
+        }
+
 
         if (annotatedType.isAnnotationPresent(Optional.class))
-            return (Serializer<T>) new OptionalSerializer<>(serializer);
+            serializer = new OptionalSerializer<>(serializer);
 
         return (Serializer<T>) serializer;
     }

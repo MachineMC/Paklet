@@ -6,7 +6,7 @@ import org.machinemc.paklet.test.TestPackets;
 import java.util.Currency;
 import java.util.Date;
 
-@Packet(id = 0x99, catalogue = TestPackets.class)
+@Packet(id = 8, catalogue = TestPackets.class)
 public class RulesTestingPacket {
 
     public Date date;
