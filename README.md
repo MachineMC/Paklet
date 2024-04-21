@@ -95,7 +95,8 @@ meant to be used for packets that require more complicated serialization that ca
 resolved with automatic serialization.
 
 > [!NOTE]
-> Paklet also offers `@VarIntSerializer` and `@VarLongSerializer` compatible with the Minecraft Java Protocol.
+> Paklet also offers [`VarIntSerializer`](paklet-api/src/main/java/org/machinemc/paklet/serialization/VarIntSerializer.java)
+> and [`VarLongSerializer`](paklet-api/src/main/java/org/machinemc/paklet/serialization/VarLongSerializer.java) compatible with the Minecraft Java Protocol.
 
 For more examples see tests of the `paklet-core` module.
 
@@ -121,20 +122,46 @@ public class MyCustomSerializer implements Serializer<Integer> {
 }
 ```
 
-`@Supports` annotation specifies which types the serializer supports, if more complex rule for choosing the types is needed
-(e.g. array types), the array can stay empty and custom [`SerializationRule`](paklet-api/src/main/java/org/machinemc/paklet/serialization/rule/SerializationRule.java) needs to be implemented.
+[`@Supports`](paklet-api/src/main/java/org/machinemc/paklet/serialization/Supports.java) annotation specifies which types the serializer supports,
+if more complex rule for choosing the types is needed (e.g. array types), the array can stay empty and custom
+[`SerializationRule`](paklet-api/src/main/java/org/machinemc/paklet/serialization/rule/SerializationRule.java) needs to be implemented.
 
-All serializers annotated with [`DefaultSerializer`](paklet-api/src/main/java/org/machinemc/paklet/serialization/DefaultSerializer.java) are automatically registered with given catalogue.
+All serializers annotated with [`@DefaultSerializer`](paklet-api/src/main/java/org/machinemc/paklet/serialization/DefaultSerializer.java) are automatically registered with given catalogue.
 
 [`SerializerContext`](paklet-api/src/main/java/org/machinemc/paklet/serialization/SerializerContext.java) provided for each serialization action gives
 access to currently registered serializers and type of field that is currently being serialized.
+
+##### Provided serializers by Paklet
+
+| Serializer                                                                                              | Supported types                                                                             | Catalogue                                                                                                             |
+|---------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| Boolean                                                                                                 | `Boolean, boolean`                                                                          | [`DefaultSerializers`](paklet-api/src/main/java/org/machinemc/paklet/serialization/catalogue/DefaultSerializers.java) |
+| Byte                                                                                                    | `Byte, byte`                                                                                | [`DefaultSerializers`](paklet-api/src/main/java/org/machinemc/paklet/serialization/catalogue/DefaultSerializers.java) |
+| Short                                                                                                   | `Short, short`                                                                              | [`DefaultSerializers`](paklet-api/src/main/java/org/machinemc/paklet/serialization/catalogue/DefaultSerializers.java) |
+| Integer                                                                                                 | `Integer, int`                                                                              | [`DefaultSerializers`](paklet-api/src/main/java/org/machinemc/paklet/serialization/catalogue/DefaultSerializers.java) |
+| Long                                                                                                    | `Long, long`                                                                                | [`DefaultSerializers`](paklet-api/src/main/java/org/machinemc/paklet/serialization/catalogue/DefaultSerializers.java) |
+| Float                                                                                                   | `Float, float`                                                                              | [`DefaultSerializers`](paklet-api/src/main/java/org/machinemc/paklet/serialization/catalogue/DefaultSerializers.java) |
+| Double                                                                                                  | `Double, double`                                                                            | [`DefaultSerializers`](paklet-api/src/main/java/org/machinemc/paklet/serialization/catalogue/DefaultSerializers.java) |
+| Character                                                                                               | `Character, char`                                                                           | [`DefaultSerializers`](paklet-api/src/main/java/org/machinemc/paklet/serialization/catalogue/DefaultSerializers.java) |
+| Number                                                                                                  | `Number, BigDecimal, BigInteger`                                                            | [`DefaultSerializers`](paklet-api/src/main/java/org/machinemc/paklet/serialization/catalogue/DefaultSerializers.java) |
+| String                                                                                                  | `String`                                                                                    | [`DefaultSerializers`](paklet-api/src/main/java/org/machinemc/paklet/serialization/catalogue/DefaultSerializers.java) |
+| Collection                                                                                              | `Collection, SequencedCollection, List, LinkedList, ArrayList, Set, LinkedHashSet, HashSet` | [`DefaultSerializers`](paklet-api/src/main/java/org/machinemc/paklet/serialization/catalogue/DefaultSerializers.java) |
+| Map                                                                                                     | `Map, SequencedMap, HashMap, LinkedHashMap, TreeMap`                                        | [`DefaultSerializers`](paklet-api/src/main/java/org/machinemc/paklet/serialization/catalogue/DefaultSerializers.java) |
+| UUID                                                                                                    | `UUID`                                                                                      | [`DefaultSerializers`](paklet-api/src/main/java/org/machinemc/paklet/serialization/catalogue/DefaultSerializers.java) |
+| Instant                                                                                                 | `Instant`                                                                                   | [`DefaultSerializers`](paklet-api/src/main/java/org/machinemc/paklet/serialization/catalogue/DefaultSerializers.java) |
+| BitSet                                                                                                  | `BitSet`                                                                                    | [`DefaultSerializers`](paklet-api/src/main/java/org/machinemc/paklet/serialization/catalogue/DefaultSerializers.java) |
+| Enum                                                                                                    | none, has to be specified                                                                   | [`DefaultSerializers`](paklet-api/src/main/java/org/machinemc/paklet/serialization/catalogue/DefaultSerializers.java) |
+| Array                                                                                                   | none, has to be specified                                                                   | [`DefaultSerializers`](paklet-api/src/main/java/org/machinemc/paklet/serialization/catalogue/DefaultSerializers.java) |
+| Serializable                                                                                            | none, has to be specified                                                                   | [`DefaultSerializers`](paklet-api/src/main/java/org/machinemc/paklet/serialization/catalogue/DefaultSerializers.java) |
+| [VarIntSerializer](paklet-api/src/main/java/org/machinemc/paklet/serialization/VarIntSerializer.java)   | `Integer, int`                                                                              | none                                                                                                                  |
+| [VarLongSerializer](paklet-api/src/main/java/org/machinemc/paklet/serialization/VarLongSerializer.java) | `Long, long`                                                                                | none                                                                                                                  |
 
 For more examples of serializer implementation, see [`Serializers`](paklet-api/src/main/java/org/machinemc/paklet/serialization/Serializers.java).
 
 #### Packet Crafting
 
 To read and write packets, instance of [`PacketFactory`](paklet-api/src/main/java/org/machinemc/paklet/PacketFactory.java) is required.
-The default implementation is provided in `paklet-core` module as [PacketFactoryImpl](paklet-core/src/main/java/org/machinemc/paklet/PacketFactoryImpl.java).
+The default implementation is provided in `paklet-core` module as [`PacketFactoryImpl`](paklet-core/src/main/java/org/machinemc/paklet/PacketFactoryImpl.java).
 
 ```java
 public static PacketFactory createFactory() {
