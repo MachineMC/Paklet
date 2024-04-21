@@ -11,7 +11,7 @@ import org.machinemc.paklet.test.packet.CustomSerializerPacket;
 public class CustomSerializerTest {
 
     @Test
-    public void ignoreTest() {
+    public void customSerializerTest() {
         PacketFactory factory = TestUtil.createFactory();
 
         DataVisitor visitor = new NettyDataVisitor(Unpooled.buffer());
