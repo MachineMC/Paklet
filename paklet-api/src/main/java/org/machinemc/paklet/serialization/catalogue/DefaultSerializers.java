@@ -24,6 +24,7 @@ public class DefaultSerializers implements DynamicCatalogue.Serializers {
                 new org.machinemc.paklet.serialization.Serializers.Number(),
                 new org.machinemc.paklet.serialization.Serializers.String(),
                 new org.machinemc.paklet.serialization.Serializers.Collection(),
+                new org.machinemc.paklet.serialization.Serializers.Map(),
                 new org.machinemc.paklet.serialization.Serializers.UUID(),
                 new org.machinemc.paklet.serialization.Serializers.Instant(),
                 new org.machinemc.paklet.serialization.Serializers.BitSet(),

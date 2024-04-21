@@ -6,9 +6,7 @@ import org.machinemc.paklet.*;
 import org.machinemc.paklet.netty.NettyDataVisitor;
 import org.machinemc.paklet.test.packet.CollectionsPacket;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 public class ParameterTest {
 
@@ -26,12 +24,24 @@ public class ParameterTest {
         packet.numbers = new HashSet<>(List.of(1, 2, 3, 4, 5));
         packet.nestedCollection = new ArrayList<>(List.of(List.of("Hello"), List.of("World")));
 
+        packet.mapContents = Map.of("hello", 1, "world", 2);
+        packet.hashMap = new HashMap<>();
+        packet.hashMap.put(10, null);
+        packet.hashMap.put(5, "Hello");
+        packet.treeMap = new TreeMap<>();
+        packet.treeMap.put("Hi", "World");
+        packet.treeMap.put("Hello", "World");
+
         factory.write(packet, visitor);
         CollectionsPacket packetClone = factory.create(Packet.DEFAULT, visitor);
 
         assert packetClone.contents.equals(packet.contents);
         assert packetClone.numbers.equals(packet.numbers);
         assert packetClone.nestedCollection.equals(packet.nestedCollection);
+
+        assert packetClone.mapContents.equals(packet.mapContents);
+        assert packetClone.hashMap.equals(packet.hashMap);
+        assert packetClone.treeMap.equals(packet.treeMap);
     }
 
 }

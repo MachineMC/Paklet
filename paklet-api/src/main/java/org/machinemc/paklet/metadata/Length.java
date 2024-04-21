@@ -10,8 +10,9 @@ import java.lang.annotation.Target;
  * <p>
  * By default, supported by {@link org.machinemc.paklet.serialization.Serializers.String},
  * {@link org.machinemc.paklet.serialization.Serializers.Collection},
+ * {@link org.machinemc.paklet.serialization.Serializers.Map},
  * {@link org.machinemc.paklet.serialization.Serializers.BitSet}, and
- * {@link org.machinemc.paklet.serialization.Serializers.Array}
+ * {@link org.machinemc.paklet.serialization.Serializers.Array}.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE_USE)

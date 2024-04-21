@@ -22,7 +22,7 @@ import java.util.function.Function;
 /**
  * Collection of default serializers.
  */
-public class Serializers {
+public final class Serializers {
 
     /**
      * Serializer for {@code boolean} types.
@@ -175,7 +175,7 @@ public class Serializers {
      */
     @DefaultSerializer(DefaultSerializers.class)
     @Supports({
-            java.util.Collection.class,
+            java.util.Collection.class, SequencedCollection.class,
             List.class, LinkedList.class, ArrayList.class,
             Set.class, LinkedHashSet.class, HashSet.class
     })
@@ -222,13 +222,84 @@ public class Serializers {
                 target = parameterizedType.getRawType();
 
             java.util.Collection<Object> collection;
-            if (target == java.util.Collection.class) collection = new ArrayList<>();
-            else if (target == List.class || target == LinkedList.class) collection = new LinkedList<>();
+            if (target == java.util.Collection.class || target == SequencedCollection.class || target == List.class || target == LinkedList.class) collection = new LinkedList<>();
             else if (target == ArrayList.class) collection = new ArrayList<>();
             else if (target == Set.class || target == LinkedHashSet.class) collection = new LinkedHashSet<>();
             else if (target == HashSet.class) collection = new HashSet<>();
             else throw new UnsupportedOperationException("Unsupported type: " + target);
             return collection;
+        }
+
+    }
+
+    /**
+     * Default serializer for {@link java.util.Map} and its
+     * mostly used implementations that are part of the JDK.
+     */
+    @DefaultSerializer(DefaultSerializers.class)
+    @Supports({
+            java.util.Map.class, SequencedMap.class,
+            HashMap.class, LinkedHashMap.class, TreeMap.class
+    })
+    public static class Map implements Serializer<java.util.Map<?, ?>> {
+
+        @Override
+        public void serialize(SerializerContext context, DataVisitor visitor, java.util.Map<?, ?> map) {
+            int size = map.size();
+            if (context.annotatedType() != null)
+                checkLength(context.annotatedType(), size);
+
+            SerializerContext keyContext = context.getContextForParameter(0);
+            SerializerContext valueContext = context.getContextForParameter(1);
+
+            Serializer<java.lang.Integer> intSerializer = context.serializerProvider().getFor(java.lang.Integer.class);
+            visitor.write(context, intSerializer, size);
+
+            Serializer<Object> keySerializer = keyContext.serializeWith();
+            Serializer<Object> valueSerializer = valueContext.serializeWith();
+
+            for (java.util.Map.Entry<?, ?> entry : map.entrySet()) {
+                keySerializer.serialize(keyContext, visitor, entry.getKey());
+                valueSerializer.serialize(valueContext, visitor, entry.getValue());
+            }
+        }
+
+        @Override
+        public java.util.Map<?, ?> deserialize(SerializerContext context, DataVisitor visitor) {
+            SerializerContext keyContext = context.getContextForParameter(0);
+            SerializerContext valueContext = context.getContextForParameter(1);
+
+            Serializer<java.lang.Integer> intSerializer = context.serializerProvider().getFor(java.lang.Integer.class);
+            int size = visitor.read(context, intSerializer);
+            if (context.annotatedType() != null)
+                checkLength(context.annotatedType(), size);
+
+            java.util.Map<Object, Object> map;
+            if (context.annotatedType() == null) map = new LinkedHashMap<>();
+            else map = createMapFromType(context.annotatedType().getType());
+
+            Serializer<Object> keySerializer = keyContext.serializeWith();
+            Serializer<Object> valueSerializer = valueContext.serializeWith();
+
+            for (int i = 0; i < size; i++)
+                map.put(
+                        keySerializer.deserialize(keyContext, visitor),
+                        valueSerializer.deserialize(keyContext, visitor)
+                );
+
+            return map;
+        }
+
+        private java.util.Map<Object, Object> createMapFromType(@Nullable Type target) {
+            if (target instanceof ParameterizedType parameterizedType)
+                target = parameterizedType.getRawType();
+
+            java.util.Map<Object, Object> map;
+            if (target == java.util.Map.class || target == SequencedMap.class || target == LinkedHashMap.class) map = new LinkedHashMap<>();
+            else if (target == HashMap.class) map = new HashMap<>();
+            else if (target == TreeMap.class) map = new TreeMap<>();
+            else throw new UnsupportedOperationException("Unsupported type: " + target);
+            return map;
         }
 
     }
@@ -493,6 +564,10 @@ public class Serializers {
             super.serialize(context, visitor, t);
         }
 
+    }
+
+    private Serializers() {
+        throw new UnsupportedOperationException();
     }
 
     private static void checkRange(AnnotatedType type, long value) {
