@@ -21,7 +21,7 @@ object PluginUtils {
      * @param internalName internal name of the class
      * @return file of the class
      */
-    @JvmStatic fun classFile(directory: File, internalName: String): File {
+    fun classFile(directory: File, internalName: String): File {
         var file = directory
         val path = internalName.split("/").toMutableList()
         val fileName = "${path.last()}.class"
@@ -34,7 +34,7 @@ object PluginUtils {
      * @param dotPath dot path of the class
      * @return type of the class
      */
-    @JvmStatic fun getType(dotPath: String?): Type {
+    fun getType(dotPath: String?): Type {
         return Type.getType(getDescriptor(dotPath!!))
     }
 
@@ -42,7 +42,7 @@ object PluginUtils {
      * @param internalName internal name of the class
      * @return type of the class
      */
-    @JvmStatic fun getTypeFromInternal(internalName: String): Type {
+    fun getTypeFromInternal(internalName: String): Type {
         return Type.getType(getDescriptorFromInternal(internalName))
     }
 
@@ -50,7 +50,7 @@ object PluginUtils {
      * @param dotPath dot path of the class
      * @return descriptor of the class
      */
-    @JvmStatic fun getDescriptor(dotPath: String): String {
+    fun getDescriptor(dotPath: String): String {
         return "L${dotPath.replace(".", "/")};"
     }
 
@@ -58,7 +58,7 @@ object PluginUtils {
      * @param internalName internal name of the class
      * @return descriptor of the class
      */
-    @JvmStatic fun getDescriptorFromInternal(internalName: String): String {
+    fun getDescriptorFromInternal(internalName: String): String {
         return "L$internalName;"
     }
 
@@ -68,7 +68,7 @@ object PluginUtils {
      * @param file class file
      * @param visitor visitor
      */
-    @JvmStatic fun readClass(file: File, visitor: ClassVisitor) {
+    fun readClass(file: File, visitor: ClassVisitor) {
         FileInputStream(file).use { input -> ClassReader(input).accept(visitor, 0) }
     }
 
@@ -79,7 +79,7 @@ object PluginUtils {
      * @param visitor visitor
      * @param bytes updated class data
      */
-    @JvmStatic fun <T : ClassVisitor> readClassAndModify(file: File, visitor: T, bytes: Function<T, ByteArray>) {
+    fun <T : ClassVisitor> readClassAndModify(file: File, visitor: T, bytes: Function<T, ByteArray>) {
         FileInputStream(file).use { input -> ClassReader(input).accept(visitor, 0) }
         file.writeBytes(bytes.apply(visitor))
     }
@@ -90,7 +90,7 @@ object PluginUtils {
      * @param classFile class file
      * @param bytes class data
      */
-    @JvmStatic fun writeClass(classFile: File, bytes: ByteArray) {
+    fun writeClass(classFile: File, bytes: ByteArray) {
         if (!classFile.exists() && !classFile.createNewFile())
             throw IOException("Failed to create the class file ${classFile.name}")
         classFile.writeBytes(bytes)

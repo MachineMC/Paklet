@@ -1,6 +1,6 @@
 package org.machinemc.paklet.modifiers;
 
-import org.machinemc.paklet.Serializer;
+import org.machinemc.paklet.serialization.Serializer;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -14,6 +14,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE_USE)
 public @interface SerializeWith {
 
+    /**
+     * Class of the serializer to use.
+     *
+     * @return serializer to use
+     */
     Class<? extends Serializer<?>> value();
 
 }

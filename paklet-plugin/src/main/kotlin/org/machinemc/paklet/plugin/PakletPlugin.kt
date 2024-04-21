@@ -1,42 +1,38 @@
 package org.machinemc.paklet.plugin
 
+import com.google.gson.JsonArray
+import com.google.gson.JsonParser
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.provider.Property
-import org.gradle.kotlin.dsl.task
+import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.kotlin.dsl.withType
+import org.machinemc.paklet.plugin.bytecode.PacketExpander
+import java.io.File
+import java.io.FileReader
 
 /**
  * Entry point for Paklet Gradle plugin.
  */
 abstract class PakletPlugin : Plugin<Project> {
 
-    interface PakletPluginExtension {
-
-        val testEnvironment: Property<Boolean>
-
-    }
-
     override fun apply(target: Project) {
-        val extension = target.extensions.create("paklet", PakletPluginExtension::class.java)
-        extension.testEnvironment.convention(false)
+        val tasks = target.tasks.withType<JavaCompile>()
+        tasks.forEach { task -> task.doLast {
+                val destination = task.destinationDirectory
+                if (!destination.asFile.isPresent) return@doLast
 
-        val compileJava = target.tasks.named("compileJava").get()
-        val compileTestJava = target.tasks.named("compileTestJava").get()
+                val directory = destination.asFile.get()
+                val packetData = File(directory, "paklet-packet-data.json")
+                if (!packetData.exists()) return@doLast
 
-        val createPackets = target.task<CreatePackets>("createPackets")
-        createPackets.run {
-            doLast {
-                val targetTask = if (extension.testEnvironment.get()) compileTestJava else compileJava
-                if (!targetTask.state.didWork) {
-                    didWork = false
-                    return@doLast
+                var packets: JsonArray
+                JsonParser.parseReader(FileReader(packetData)).asJsonObject.run {
+                    packets = getAsJsonArray("packets")
                 }
-                init()
-                modifyPacketClasses()
+
+                packets.forEach { packet -> PacketExpander(PluginUtils.classFile(directory, packet.asString)) }
             }
         }
-        compileJava.finalizedBy(createPackets)
-        compileTestJava.finalizedBy(createPackets)
     }
 
 }

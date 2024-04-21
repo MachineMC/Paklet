@@ -9,6 +9,8 @@ pluginManagement {
     includeBuild("paklet-plugin")
 }
 
+include("jmh-benchmarks")
+
 dependencyResolutionManagement {
     versionCatalogs {
 
@@ -33,6 +35,14 @@ dependencyResolutionManagement {
 
             val googleGson: String by settings
             library("google-gson", "com.google.code.gson:gson:$googleGson")
+
+            val jmh: String by settings
+            library("jmh-core", "org.openjdk.jmh:jmh-core:$jmh")
+            library("jmh-processors", "org.openjdk.jmh:jmh-generator-annprocess:$jmh")
+            library("jmh-bytecode", "org.openjdk.jmh:jmh-generator-bytecode:$jmh")
+
+            val champeauJmh: String by settings
+            plugin("champeau-jmh", "me.champeau.jmh").version(champeauJmh)
         }
 
 

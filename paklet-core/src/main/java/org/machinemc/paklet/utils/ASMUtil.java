@@ -4,8 +4,10 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+/**
+ * Utilities for easier manipulation with ASM library.
+ */
 public final class ASMUtil {
-
 
     private ASMUtil() {
         throw new UnsupportedOperationException();

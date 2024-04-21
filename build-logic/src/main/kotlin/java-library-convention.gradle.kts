@@ -14,6 +14,10 @@ val libs = project.rootProject
     .getByType(VersionCatalogsExtension::class)
     .named("libs")
 
+//
+// Repositories and Dependencies
+//
+
 repositories {
     mavenCentral()
 }
@@ -26,37 +30,24 @@ dependencies {
     testImplementation(libs.findLibrary("junit-params").get())
 }
 
+//
+// Java configuration
+//
+
 java {
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
     withSourcesJar()
 }
 
-tasks.withType<JavaCompile>().configureEach {
-    options.compilerArgs.add("--enable-preview")
-}
-tasks.withType<Test>().configureEach {
-    jvmArgs("--enable-preview")
-}
-tasks.withType<JavaExec>().configureEach {
-    jvmArgs("--enable-preview")
-}
+//
+// Task configurations
+//
 
 tasks {
-    compileJava {
+    withType<JavaCompile> {
         options.release.set(21)
         options.encoding = Charsets.UTF_8.name()
-//        options.compilerArgs.addAll(listOf(
-//            "-Xlint:preview",
-//            "-Xlint:unchecked",
-//            "-Xlint:deprecation"
-//        ))
-    }
-    javadoc {
-        options.encoding = Charsets.UTF_8.name()
-    }
-    processResources {
-        filteringCharset = Charsets.UTF_8.name()
     }
     test {
         useJUnitPlatform()

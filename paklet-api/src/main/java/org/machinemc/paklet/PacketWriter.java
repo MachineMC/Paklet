@@ -1,12 +1,22 @@
 package org.machinemc.paklet;
 
-import java.util.function.BiConsumer;
+import org.machinemc.paklet.serialization.SerializerContext;
 
 /**
  * Used to quickly write packets to a data visitors.
  *
- * @param <T> packet
+ * @param <Packet> packet
  */
 @FunctionalInterface
-public interface PacketWriter<T /* Packet */> extends BiConsumer<DataVisitor, T> {
+public interface PacketWriter<Packet> {
+
+    /**
+     * Writes next packet to the data visitor.
+     *
+     * @param context context
+     * @param dataVisitor data visitor
+     * @param packet packet
+     */
+    void write(SerializerContext context, DataVisitor dataVisitor, Packet packet);
+
 }

@@ -2,8 +2,9 @@ package org.machinemc.paklet.test.packet;
 
 import org.machinemc.paklet.Packet;
 import org.machinemc.paklet.modifiers.Optional;
+import org.machinemc.paklet.test.TestPackets;
 
-@Packet(1)
+@Packet(id = 1, catalogue = TestPackets.class)
 public class ArrayPacket {
 
     public String[] stringArray;

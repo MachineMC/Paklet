@@ -4,8 +4,7 @@ import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.Test;
 import org.machinemc.paklet.*;
 import org.machinemc.paklet.netty.NettyDataVisitor;
-import org.machinemc.paklet.serializers.SerializerProvider;
-import org.machinemc.paklet.serializers.Serializers;
+import org.machinemc.paklet.test.packet.CustomIDPacket;
 import org.machinemc.paklet.test.packet.RulesTestingPacket;
 
 import java.time.Instant;
@@ -17,8 +16,7 @@ public class SerializationTest {
 
     @Test
     public void arrayTest() {
-        SerializerProvider provider = serializerProvider();
-        PacketFactory factory = factory(provider);
+        PacketFactory factory = TestUtil.createFactory();
 
         DataVisitor visitor = new NettyDataVisitor(Unpooled.buffer());
 
@@ -35,12 +33,19 @@ public class SerializationTest {
         assert packetClone.state == packet.state;
     }
 
-    private SerializerProvider serializerProvider() {
-        return SerializerProviderBuilder.create().loadProvided().build();
-    }
+    @Test
+    public void dynamicPacketIDTest() {
+        PacketFactory factory = TestUtil.createFactory();
 
-    private PacketFactory factory(SerializerProvider serializerProvider) {
-        return PacketFactoryBuilder.create(new Serializers.Integer(), serializerProvider).loadDefaults().build();
+        DataVisitor visitor = new NettyDataVisitor(Unpooled.buffer());
+
+        CustomIDPacket packet = new CustomIDPacket();
+        packet.message = "Hello world";
+
+        factory.write(packet, visitor);
+        CustomIDPacket packetClone = factory.create(Packet.DEFAULT, visitor);
+
+        assert packet.message.equals(packetClone.message);
     }
 
 }

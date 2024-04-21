@@ -2,33 +2,51 @@ package org.machinemc.paklet.processors;
 
 import org.machinemc.paklet.DataVisitor;
 import org.machinemc.paklet.PacketReader;
-import org.machinemc.paklet.modifiers.Ignore;
+import org.machinemc.paklet.serialization.SerializerContext;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
+/**
+ * Reader creator that uses reflection and proxy.
+ * <p>
+ * This is the default provided reader for packets that do not implement custom serialization logic
+ * and were not modified by the Paklet plugin.
+ */
 public class ProxyReaderCreator implements ReaderCreator {
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> PacketReader<T> create(Class<T> packet) {
         try {
-            Constructor<T> constructor = packet.getConstructor();
-            List<Field> fields = Arrays.stream(packet.getDeclaredFields())
-                    .filter(field -> !Modifier.isTransient(field.getModifiers()))
-                    .filter(field -> !field.isAnnotationPresent(Ignore.class))
-                    .toList();
+            Constructor<T> constructor = packet.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            List<Field> fields = ProcessorsUtil.collectSerializableFields(packet);
             fields.forEach(field -> field.setAccessible(true));
-            return (PacketReader<T>) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[]{PacketReader.class}, (_, _, args) -> {
-                DataVisitor visitor = (DataVisitor) args[0];
+            return (PacketReader<T>) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[]{PacketReader.class}, (proxy, method, args) -> {
+
+                switch (method.getName()) {
+                    case "toString" -> {
+                        return "ProxyPacketReader";
+                    }
+                    case "hashCode" -> {
+                        return Objects.hashCode(proxy);
+                    }
+                    case "equals" -> {
+                        return Objects.equals(proxy, args[0]);
+                    }
+                }
+
+                SerializerContext context = (SerializerContext) args[0];
+                DataVisitor visitor = (DataVisitor) args[1];
+
                 T instance = constructor.newInstance();
                 for (Field field : fields) {
-                    Object value = field.get(instance);
-                    ProcessorsUtil.setValueForField(visitor, packet, field.getName(), value);
+                    Object value = ProcessorsUtil.getValueForField(context, visitor, packet, field.getName());
+                    field.set(instance, value);
                 }
                 return instance;
             });

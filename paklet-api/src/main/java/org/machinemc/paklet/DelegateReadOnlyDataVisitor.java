@@ -1,5 +1,8 @@
 package org.machinemc.paklet;
 
+import org.machinemc.paklet.serialization.Serializer;
+import org.machinemc.paklet.serialization.SerializerContext;
+
 import java.io.OutputStream;
 import java.util.function.BiConsumer;
 
@@ -27,7 +30,7 @@ public class DelegateReadOnlyDataVisitor implements DataVisitor {
     }
 
     @Override
-    public <T> DataVisitor write(Serializer<T> serializer, T object) {
+    public <T> DataVisitor write(SerializerContext context, Serializer<T> serializer, T object) {
         throw new UnsupportedOperationException();
     }
 
