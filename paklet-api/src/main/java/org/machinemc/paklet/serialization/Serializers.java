@@ -2,10 +2,7 @@ package org.machinemc.paklet.serialization;
 
 import org.jetbrains.annotations.Nullable;
 import org.machinemc.paklet.DataVisitor;
-import org.machinemc.paklet.metadata.FixedLength;
-import org.machinemc.paklet.metadata.FloatingRange;
-import org.machinemc.paklet.metadata.Length;
-import org.machinemc.paklet.metadata.Range;
+import org.machinemc.paklet.metadata.*;
 import org.machinemc.paklet.serialization.catalogue.DefaultSerializers;
 
 import java.io.*;
@@ -189,8 +186,7 @@ public final class Serializers {
 
             SerializerContext paramContext = context.getContextForParameter(0);
 
-            Serializer<java.lang.Integer> intSerializer = context.serializerProvider().getFor(java.lang.Integer.class);
-            visitor.write(context, intSerializer, size);
+            writeLength(context.annotatedType(), context, visitor, size);
 
             Serializer<Object> paramSerializer = paramContext.serializeWith();
             for (Object object : objects)
@@ -201,8 +197,8 @@ public final class Serializers {
         public java.util.Collection<?> deserialize(SerializerContext context, DataVisitor visitor) {
             SerializerContext paramContext = context.getContextForParameter(0);
 
-            Serializer<java.lang.Integer> intSerializer = context.serializerProvider().getFor(java.lang.Integer.class);
-            int size = visitor.read(context, intSerializer);
+            int size = readLength(context.annotatedType(), context, visitor);
+
             if (context.annotatedType() != null)
                 checkLength(context.annotatedType(), size);
 
@@ -252,8 +248,7 @@ public final class Serializers {
             SerializerContext keyContext = context.getContextForParameter(0);
             SerializerContext valueContext = context.getContextForParameter(1);
 
-            Serializer<java.lang.Integer> intSerializer = context.serializerProvider().getFor(java.lang.Integer.class);
-            visitor.write(context, intSerializer, size);
+            writeLength(context.annotatedType(), context, visitor, size);
 
             Serializer<Object> keySerializer = keyContext.serializeWith();
             Serializer<Object> valueSerializer = valueContext.serializeWith();
@@ -269,8 +264,8 @@ public final class Serializers {
             SerializerContext keyContext = context.getContextForParameter(0);
             SerializerContext valueContext = context.getContextForParameter(1);
 
-            Serializer<java.lang.Integer> intSerializer = context.serializerProvider().getFor(java.lang.Integer.class);
-            int size = visitor.read(context, intSerializer);
+            int size = readLength(context.annotatedType(), context, visitor);
+
             if (context.annotatedType() != null)
                 checkLength(context.annotatedType(), size);
 
@@ -442,8 +437,7 @@ public final class Serializers {
             if (context.annotatedType() == null) throw new UnsupportedOperationException();
 
             int length = java.lang.reflect.Array.getLength(object);
-            Serializer<java.lang.Integer> intSerializer = context.serializerProvider().getFor(java.lang.Integer.class);
-            visitor.write(context, intSerializer, length);
+            writeLength(context.annotatedType(), context, visitor, length);
 
             AnnotatedType componentType = ((AnnotatedArrayType) context.annotatedType()).getAnnotatedGenericComponentType();
             SerializerContext componentContext = context.withType(componentType);
@@ -457,8 +451,7 @@ public final class Serializers {
         public Object deserialize(SerializerContext context, DataVisitor visitor) {
             if (context.annotatedType() == null) throw new UnsupportedOperationException();
 
-            Serializer<java.lang.Integer> intSerializer = context.serializerProvider().getFor(java.lang.Integer.class);
-            int length = visitor.read(context, intSerializer);
+            int length = readLength(context.annotatedType(), context, visitor);
 
             Class<?> clazz = SerializerContext.asClass(context.annotatedType().getType());
             Object array = java.lang.reflect.Array.newInstance(clazz.getComponentType(), length);
@@ -598,6 +591,48 @@ public final class Serializers {
         Length rLength = type.getAnnotation(Length.class);
         if (rLength != null && (rLength.max() < length || rLength.min() > length))
             throw new IllegalArgumentException("Expected length between " + rLength.min() + " and " + rLength.max() + ", got " + length);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void writeLength(@Nullable AnnotatedType type, SerializerContext context, DataVisitor visitor, int length) {
+        if (type == null) {
+            Serializer<java.lang.Integer> intSerializer = context.serializerProvider().getFor(java.lang.Integer.class);
+            visitor.write(context, intSerializer, length);
+            return;
+        }
+
+        if (type.isAnnotationPresent(DoNotPrefix.class)) return;
+
+        LengthUsing using = type.getAnnotation(LengthUsing.class);
+        Serializer<?> serializer = using == null
+                ? context.serializerProvider().getFor(java.lang.Integer.class)
+                : context.serializerProvider().getOf(using.value());
+
+        visitor.write(context, (Serializer<java.lang.Integer>) serializer, length);
+    }
+
+    private static int readLength(@Nullable AnnotatedType type, SerializerContext context, DataVisitor visitor) {
+        if (type == null) {
+            return visitor.read(context, context.serializerProvider().getFor(java.lang.Integer.class));
+        }
+
+        if (type.isAnnotationPresent(DoNotPrefix.class)) {
+            FixedLength fixedLength = type.getAnnotation(FixedLength.class);
+            if (fixedLength == null)
+                throw new RuntimeException("Missing FixedLength annotation for un-prefixed collection");
+            return fixedLength.value();
+        }
+
+        LengthUsing using = type.getAnnotation(LengthUsing.class);
+        Serializer<?> serializer = using == null
+                ? context.serializerProvider().getFor(java.lang.Integer.class)
+                : context.serializerProvider().getOf(using.value());
+
+        Object length = visitor.read(context, serializer);
+        if (!(length instanceof java.lang.Number num))
+            throw new UnsupportedOperationException("Serializer " + serializer.getClass().getName() + " can not be used to prefix collections");
+
+        return num.intValue();
     }
 
 }
