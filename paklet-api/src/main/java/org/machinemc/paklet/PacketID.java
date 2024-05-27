@@ -6,12 +6,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Used to annotate static int fields of packet classes with
- * dynamic packet IDs.
+ * Used to annotate static int fields (or no argument methods returning int)
+ * of packet classes to compute dynamic packet IDs.
  *
  * @see Packet#DYNAMIC_PACKET
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
+@Target({ElementType.FIELD, ElementType.METHOD})
 public @interface PacketID {
 }

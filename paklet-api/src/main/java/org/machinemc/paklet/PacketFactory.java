@@ -3,7 +3,9 @@ package org.machinemc.paklet;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -46,7 +48,7 @@ public interface PacketFactory {
      * @param reader reader for the packet
      * @param writer writer for the packet
      * @param packetID packet ID used to register this packet
-     * @param group group name of this packet
+     * @param group group the packet should be registered to
      * @param <PacketType> packet
      *
      * @throws IllegalArgumentException if packet with the same ID and group is already registered
@@ -82,15 +84,19 @@ public interface PacketFactory {
      * Removes packet with given type.
      *
      * @param packetClass class of the packet
-     * @return whether the packet has been removed successfully
+     * @return array of groups from where the packet has been removed
      * @param <PacketType> packet
      */
-    default <PacketType> boolean removePacket(Class<PacketType> packetClass) {
-        int id = getPacketID(packetClass);
-        if (id == -1) return false;
-        String group = getPacketGroup(packetClass).orElse(null);
-        if (group == null) return false;
-        return removePacket(id, group);
+    default <PacketType> String[] removePacket(Class<PacketType> packetClass) {
+        String[] groups = getPacketGroup(packetClass).orElse(new String[0]);
+        List<String> removed = new ArrayList<>();
+        for (String group : groups) {
+            int id = getPacketID(packetClass, group);
+            if (id == -1) continue;
+            if (!removePacket(id, group)) continue;
+            removed.add(group);
+        }
+        return removed.toArray(String[]::new);
     }
 
     /**
@@ -115,11 +121,12 @@ public interface PacketFactory {
      * Returns ID for given registered packet class.
      *
      * @param packetClass packet class
+     * @param group group of the packet
      * @return packet ID of given packet class, or {@code -1} if the class is
      * not registered
      * @param <PacketType> packet
      */
-    <PacketType> int getPacketID(Class<PacketType> packetClass);
+    <PacketType> int getPacketID(Class<PacketType> packetClass, String group);
 
     /**
      * Returns group for given registered packet class.
@@ -128,17 +135,18 @@ public interface PacketFactory {
      * @return packet class of given packet class
      * @param <PacketType> packet
      */
-    <PacketType> Optional<String> getPacketGroup(Class<PacketType> packetClass);
+    <PacketType> Optional<String[]> getPacketGroup(Class<PacketType> packetClass);
 
     /**
-     * Checks whether the given packet class is registered.
+     * Checks whether the given packet class is registered in given group.
      *
      * @param packetClass packet class
-     * @return whether the packet class is registered
+     * @param group group
+     * @return whether the packet class is registered in the group
      * @param <PacketType> packet
      */
-    default <PacketType> boolean isRegistered(Class<PacketType> packetClass) {
-        return getPacketID(packetClass) != -1;
+    default <PacketType> boolean isRegistered(Class<PacketType> packetClass, String group) {
+        return getPacketID(packetClass, group) != -1;
     }
 
     /**
@@ -186,9 +194,10 @@ public interface PacketFactory {
      * Writes packet to the provided data visitor.
      *
      * @param packet packet to write
+     * @param group group
      * @param visitor visitor
      * @param <PacketType> packet
      */
-    <PacketType> void write(PacketType packet, DataVisitor visitor);
+    <PacketType> void write(PacketType packet, String group, DataVisitor visitor);
 
 }

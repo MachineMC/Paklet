@@ -19,7 +19,7 @@ public class CustomSerializerTest {
         CustomSerializerPacket packet = new CustomSerializerPacket();
         packet.content = "Hello World";
 
-        factory.write(packet, visitor);
+        factory.write(packet, Packet.DEFAULT, visitor);
         CustomSerializerPacket packetClone = factory.create(Packet.DEFAULT, visitor);
 
         assert packetClone.content.equals(packet.content);

@@ -25,7 +25,7 @@ public class SerializationTest {
         packet.currency = Currency.getInstance(Locale.US);
         packet.state = RulesTestingPacket.State.COMPLETED;
 
-        factory.write(packet, visitor);
+        factory.write(packet, Packet.DEFAULT, visitor);
         RulesTestingPacket packetClone = factory.create(Packet.DEFAULT, visitor);
 
         assert packetClone.date.equals(packet.date);
@@ -42,7 +42,7 @@ public class SerializationTest {
         CustomIDPacket packet = new CustomIDPacket();
         packet.message = "Hello world";
 
-        factory.write(packet, visitor);
+        factory.write(packet, Packet.DEFAULT, visitor);
         CustomIDPacket packetClone = factory.create(Packet.DEFAULT, visitor);
 
         assert packet.message.equals(packetClone.message);

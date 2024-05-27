@@ -59,10 +59,13 @@ public @interface Packet {
      * <p>
      * Compare to packet IDs, packets do not store information about their groups when
      * they are serialized using {@link PacketFactory}.
+     * <p>
+     * One packet can have multiple different groups, for registering the packet to each group
+     * under different ID, see {@link Packet#DYNAMIC_PACKET} and {@link PacketRegistrationContext}.
      *
      * @return group of the packet
      */
-    String group() default DEFAULT;
+    String[] group() default DEFAULT;
 
     /**
      * Specifies class that is used as catalogue (identifier) for the packet.

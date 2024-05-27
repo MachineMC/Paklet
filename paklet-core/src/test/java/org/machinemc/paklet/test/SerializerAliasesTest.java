@@ -19,7 +19,7 @@ public class SerializerAliasesTest {
         AliasPacket packet = new AliasPacket();
         packet.foo = 1;
 
-        factory.write(packet, visitor);
+        factory.write(packet, Packet.DEFAULT, visitor);
         AliasPacket packetClone = factory.create(Packet.DEFAULT, visitor);
 
         assert packetClone.foo == packet.foo;

@@ -10,9 +10,12 @@ import org.machinemc.paklet.serialization.SerializerProvider;
 
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Exchanger;
 import java.util.function.Function;
 
 /**
@@ -23,7 +26,7 @@ public class PacketFactoryImpl implements PacketFactory {
     private final PacketEncoder encoder;
     private final SerializerProvider serializerProvider;
 
-    private final Map<Class<?>, PacketGroup> packet2Group = new ConcurrentHashMap<>();
+    private final Map<Class<?>, List<PacketGroup>> packet2Group = new ConcurrentHashMap<>();
     private final Map<String, PacketGroup> groups = new ConcurrentHashMap<>();
 
     public PacketFactoryImpl(PacketEncoder encoder, SerializerProvider serializerProvider) {
@@ -54,7 +57,8 @@ public class PacketFactoryImpl implements PacketFactory {
     public <PacketType> void addPacket(Class<PacketType> packetClass, PacketReader<PacketType> reader, PacketWriter<PacketType> writer) {
         Packet annotation = packetClass.getAnnotation(Packet.class);
         if (annotation == null) throw new IllegalArgumentException("Class " + packetClass.getName() + " is not a valid packet class");
-        addPacket(packetClass, reader, writer, computePacketID(packetClass), annotation.group());
+        for (String group : annotation.group())
+            addPacket(packetClass, reader, writer, computePacketID(packetClass, group), group);
     }
 
     @Override
@@ -62,9 +66,14 @@ public class PacketFactoryImpl implements PacketFactory {
         if (packetClass == null || reader == null || writer == null) throw new NullPointerException();
         if (packetID == Packet.INVALID_PACKET) return; // invalid packets should be ignored
         if (packetID < 0) throw new IllegalArgumentException("Invalid packet ID for packet " + packetClass.getName());
-        PacketGroup packetGroup = groups.computeIfAbsent(group, PacketGroup::new);
+
+        PacketGroup packetGroup = this.groups.computeIfAbsent(group, PacketGroup::new);
         packetGroup.addPacket(packetID, packetClass, reader, writer); // throws illegal exception if packet ID already exists
-        packet2Group.put(packetClass, packetGroup);
+
+        List<PacketGroup> groupsList = new CopyOnWriteArrayList<>(packet2Group.computeIfAbsent(packetClass, __ -> new ArrayList<>()));
+        groupsList.add(packetGroup);
+
+        packet2Group.put(packetClass, Collections.unmodifiableList(groupsList));
     }
 
     @Override
@@ -96,15 +105,15 @@ public class PacketFactoryImpl implements PacketFactory {
     }
 
     @Override
-    public <PacketType> int getPacketID(Class<PacketType> packetClass) {
-        PacketGroup packetGroup = packet2Group.get(packetClass);
+    public <PacketType> int getPacketID(Class<PacketType> packetClass, String group) {
+        PacketGroup packetGroup = groups.get(group);
         if (packetGroup == null) return -1;
         return packetGroup.getID(packetClass);
     }
 
     @Override
-    public <PacketType> Optional<String> getPacketGroup(Class<PacketType> packetClass) {
-        return Optional.ofNullable(packet2Group.get(packetClass)).map(PacketGroup::getName);
+    public <PacketType> Optional<String[]> getPacketGroup(Class<PacketType> packetClass) {
+        return Optional.ofNullable(packet2Group.get(packetClass)).map(l -> l.stream().map(PacketGroup::getName).toArray(String[]::new));
     }
 
     @Override
@@ -138,10 +147,10 @@ public class PacketFactoryImpl implements PacketFactory {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <PacketType> void write(PacketType packet, DataVisitor visitor) {
+    public <PacketType> void write(PacketType packet, String group, DataVisitor visitor) {
         Class<?> packetClass = packet.getClass();
-        PacketGroup packetGroup = packet2Group.get(packetClass);
-        if (packetGroup == null) throw new NullPointerException("Packet " + packetClass.getName() + " is not assigned to any group");
+        PacketGroup packetGroup = groups.get(group);
+        if (packetGroup == null) throw new NullPointerException("Group " + group + " is not registered");
 
         int packetID = packetGroup.getID(packetClass);
         if (packetID < 0) throw new IllegalArgumentException("Invalid packet ID: " + packetID);
@@ -156,26 +165,64 @@ public class PacketFactoryImpl implements PacketFactory {
         encoder.encode(visitor, serializerProvider, packetGroup.getName(), new PacketEncoder.Encoded(packetID, packetData));
     }
 
-    private int computePacketID(Class<?> packetClass) {
+    private int computePacketID(Class<?> packetClass, String group) {
         Packet annotation = packetClass.getAnnotation(Packet.class);
         if (annotation == null) throw new IllegalArgumentException("Class " + packetClass.getName() + " is not a valid packet class");
+
         if (annotation.id() == Packet.INVALID_PACKET) return Packet.INVALID_PACKET;
+
         if (annotation.id() == Packet.DYNAMIC_PACKET) {
+
             Field[] packetIDFields = Arrays.stream(packetClass.getDeclaredFields())
                     .filter(f -> Modifier.isStatic(f.getModifiers()))
                     .filter(f -> f.getType().equals(int.class))
                     .filter(f -> f.isAnnotationPresent(PacketID.class))
                     .toArray(Field[]::new);
-            if (packetIDFields.length == 0) throw new IllegalStateException("Class " + packetClass.getName() + " is missing packet ID field");
             if (packetIDFields.length > 1) throw new IllegalStateException("Class " + packetClass.getName() + " has more than one packet ID field");
+            if (packetIDFields.length == 1) {
+                try {
+                    packetIDFields[0].setAccessible(true);
+                    return checkPacketID((int) packetIDFields[0].get(null));
+                } catch (Exception exception) {
+                    throw new RuntimeException(exception);
+                }
+            }
+
+            Method[] packetIDMethods = Arrays.stream(packetClass.getDeclaredMethods())
+                    .filter(m -> Modifier.isStatic(m.getModifiers()))
+                    .filter(m -> m.getReturnType().equals(int.class))
+                    .filter(m -> m.getParameterTypes().length == 0)
+                    .filter(m -> m.isAnnotationPresent(PacketID.class))
+                    .toArray(Method[]::new);
+            if (packetIDMethods.length == 0) throw new IllegalStateException("Class " + packetClass.getName() + " is missing packet ID field or method");
+            if (packetIDMethods.length > 1) throw new IllegalStateException("Class " + packetClass.getName() + " has more than one packet ID method");
             try {
-                packetIDFields[0].setAccessible(true);
-                return (int) packetIDFields[0].get(null);
+                packetIDMethods[0].setAccessible(true);
+                Exchanger<Integer> idResolver = new Exchanger<>();
+                Thread.ofVirtual().start(() -> {
+                    try {
+                        PacketRegistrationContext.threadLocal.set(new PacketRegistrationContext(group));
+                        idResolver.exchange((int) packetIDMethods[0].invoke(null));
+                    } catch (Throwable throwable) {
+                        try {
+                            idResolver.exchange(Packet.DYNAMIC_PACKET);
+                        } catch (InterruptedException exception) {
+                            throw new RuntimeException(exception);
+                        }
+                    }
+                });
+                int resolved = idResolver.exchange(null);
+                return checkPacketID(resolved);
             } catch (Exception exception) {
                 throw new RuntimeException(exception);
             }
         }
-        return annotation.id();
+        return checkPacketID(annotation.id());
+    }
+
+    private int checkPacketID(int id) {
+        if (id > 0 || id == Packet.INVALID_PACKET) return id;
+        throw new RuntimeException("Invalid packet ID: " + id);
     }
 
     static class PacketGroup {

@@ -18,7 +18,7 @@ public class IgnoreTest {
         packet.ignore = "Foo";
         packet.value = 10;
 
-        factory.write(packet, visitor);
+        factory.write(packet, Packet.DEFAULT, visitor);
         IgnorePacket packetClone = factory.create(Packet.DEFAULT, visitor);
 
         assert packetClone.value == packet.value;

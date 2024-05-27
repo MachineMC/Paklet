@@ -32,7 +32,7 @@ public class ParameterTest {
         packet.treeMap.put("Hi", "World");
         packet.treeMap.put("Hello", "World");
 
-        factory.write(packet, visitor);
+        factory.write(packet, Packet.DEFAULT, visitor);
         CollectionsPacket packetClone = factory.create(Packet.DEFAULT, visitor);
 
         assert packetClone.contents.equals(packet.contents);

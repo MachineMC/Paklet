@@ -24,7 +24,7 @@ public class CollectionLengthTest {
         packet.signature[1] = 2;
         packet.signature[2] = 3;
 
-        factory.write(packet, visitor);
+        factory.write(packet, Packet.DEFAULT, visitor);
 
         assert visitor.writerIndex() == 257;
 

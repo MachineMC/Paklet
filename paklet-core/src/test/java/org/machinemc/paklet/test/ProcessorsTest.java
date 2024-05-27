@@ -38,7 +38,7 @@ public class ProcessorsTest {
         testPacket.height = 20;
         testPacket.name = "Foo";
         testPacket.value = 5;
-        factory.write(testPacket, visitor);
+        factory.write(testPacket, Packet.DEFAULT, visitor);
         TestPacket testPacketClone = factory.create(Packet.DEFAULT, visitor);
 
         assert testPacketClone.height == testPacket.height;
@@ -47,7 +47,7 @@ public class ProcessorsTest {
 
         TestCustomLogicCustomPacket testCustomLogicPacket = new TestCustomLogicCustomPacket();
         testCustomLogicPacket.value = 20;
-        factory.write(testCustomLogicPacket, visitor);
+        factory.write(testCustomLogicPacket, Packet.DEFAULT, visitor);
         TestCustomLogicCustomPacket testCustomLogicPacketClone = factory.create(Packet.DEFAULT, visitor);
 
         assert testCustomLogicPacketClone.value == testCustomLogicPacket.value;
@@ -64,7 +64,7 @@ public class ProcessorsTest {
         arrayPacket.nestedArray = new String[][]{new String[]{"Hello", "World"}, new String[]{"foo", "bar"}};
         arrayPacket.optionalElements = new String[]{"Hello", "optional", null};
 
-        factory.write(arrayPacket, visitor);
+        factory.write(arrayPacket, Packet.DEFAULT, visitor);
         ArrayPacket arrayPacketClone = factory.create(Packet.DEFAULT, visitor);
 
         assert Arrays.compare(arrayPacketClone.stringArray, arrayPacket.stringArray) == 0;
