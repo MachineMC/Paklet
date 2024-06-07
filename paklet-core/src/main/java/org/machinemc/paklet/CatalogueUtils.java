@@ -28,7 +28,9 @@ final class CatalogueUtils {
      * @return json catalogue
      */
     public static JsonObject getCatalogueForClass(Class<?> catalogueClass, Function<String, InputStream> resourcesAccessor) {
-        String path = "/" + catalogueClass.getName().replace('.', '/') + "_catalogue.json";
+        String path = "/" + catalogueClass.getPackageName().replace('.', '/');
+        String fileName = catalogueClass.getCanonicalName().replace(catalogueClass.getPackageName() + ".", "");
+        path = path + "/" + fileName + "_catalogue.json";
         try (InputStream is = resourcesAccessor.apply(path)) {
             if (is == null) throw new NullPointerException("There is no catalogue data for class " + catalogueClass.getName());
             return JsonParser.parseReader(new InputStreamReader(is)).getAsJsonObject();

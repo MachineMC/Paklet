@@ -78,13 +78,14 @@ public class PakletProcessor extends AbstractProcessor {
         catalogues: {
             for (TypeMirror catalogue : data.keySet()) {
                 CatalogueData catalogueData = data.get(catalogue);
-                Element element = processingEnv.getTypeUtils().asElement(catalogue);
+                TypeElement element = (TypeElement) processingEnv.getTypeUtils().asElement(catalogue);
                 PackageElement pkg = processingEnv.getElementUtils().getPackageOf(element);
                 try {
+                    String fileName = element.getQualifiedName().toString().replace(pkg.getQualifiedName() + ".", "");
                     FileObject file = processingEnv.getFiler().createResource(
                             StandardLocation.CLASS_OUTPUT,
                             pkg.getQualifiedName(),
-                            element.getSimpleName() + "_catalogue.json"
+                            fileName + "_catalogue.json"
                     );
                     try (Writer writer = new BufferedWriter(file.openWriter())) {
                         new Gson().toJson(catalogueData.asJSON(), writer);
