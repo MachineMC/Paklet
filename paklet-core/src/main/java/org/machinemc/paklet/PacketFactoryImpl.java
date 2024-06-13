@@ -221,8 +221,9 @@ public class PacketFactoryImpl implements PacketFactory {
     }
 
     private int checkPacketID(int id) {
-        if (id > 0 || id == Packet.INVALID_PACKET) return id;
-        throw new RuntimeException("Invalid packet ID: " + id);
+        if (id < 0 && id != Packet.INVALID_PACKET)
+            throw new RuntimeException("Invalid packet ID: " + id);
+        return id;
     }
 
     static class PacketGroup {
