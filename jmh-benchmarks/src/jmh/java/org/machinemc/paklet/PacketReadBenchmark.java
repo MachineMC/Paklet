@@ -35,7 +35,7 @@ public class PacketReadBenchmark {
     public void simplePacketRead100() {
         SimplePacket packet = BenchmarkPackets.simplePacket();
         DataVisitor visitor = new NettyDataVisitor(Unpooled.buffer());
-        factory.write(packet, visitor);
+        factory.write(packet, Packet.DEFAULT, visitor);
         for (int i = 0; i < 100; i++) {
             factory.create(Packet.DEFAULT, visitor);
             visitor.readerIndex(0);
@@ -46,7 +46,7 @@ public class PacketReadBenchmark {
     public void arrayPacketRead100() {
         ArrayPacket packet = BenchmarkPackets.arrayPacket();
         DataVisitor visitor = new NettyDataVisitor(Unpooled.buffer());
-        factory.write(packet, visitor);
+        factory.write(packet, Packet.DEFAULT, visitor);
         for (int i = 0; i < 100; i++) {
             factory.create(Packet.DEFAULT, visitor);
             visitor.readerIndex(0);
@@ -57,7 +57,7 @@ public class PacketReadBenchmark {
     public void collectionPacketRead100() {
         CollectionPacket packet = BenchmarkPackets.collectionPacket();
         DataVisitor visitor = new NettyDataVisitor(Unpooled.buffer());
-        factory.write(packet, visitor);
+        factory.write(packet, Packet.DEFAULT, visitor);
         for (int i = 0; i < 100; i++) {
             factory.create(Packet.DEFAULT, visitor);
             visitor.readerIndex(0);

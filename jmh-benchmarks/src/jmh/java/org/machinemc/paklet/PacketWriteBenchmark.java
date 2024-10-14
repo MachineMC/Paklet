@@ -36,7 +36,7 @@ public class PacketWriteBenchmark {
         SimplePacket packet = BenchmarkPackets.simplePacket();
         DataVisitor visitor = new NettyDataVisitor(Unpooled.buffer());
         for (int i = 0; i < 100; i++) {
-            factory.write(packet, visitor);
+            factory.write(packet, Packet.DEFAULT, visitor);
             visitor.writerIndex(0);
         }
     }
@@ -46,7 +46,7 @@ public class PacketWriteBenchmark {
         ArrayPacket packet = BenchmarkPackets.arrayPacket();
         DataVisitor visitor = new NettyDataVisitor(Unpooled.buffer());
         for (int i = 0; i < 100; i++) {
-            factory.write(packet, visitor);
+            factory.write(packet, Packet.DEFAULT, visitor);
             visitor.writerIndex(0);
         }
     }
@@ -56,7 +56,7 @@ public class PacketWriteBenchmark {
         CollectionPacket packet = BenchmarkPackets.collectionPacket();
         DataVisitor visitor = new NettyDataVisitor(Unpooled.buffer());
         for (int i = 0; i < 100; i++) {
-            factory.write(packet, visitor);
+            factory.write(packet, Packet.DEFAULT, visitor);
             visitor.writerIndex(0);
         }
     }

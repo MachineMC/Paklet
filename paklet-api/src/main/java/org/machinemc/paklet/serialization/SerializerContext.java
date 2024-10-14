@@ -24,7 +24,7 @@ public record SerializerContext(@Nullable AnnotatedType annotatedType, Serialize
      * @param annotatedType type
      * @return new context
      */
-    public SerializerContext withType(AnnotatedType annotatedType) {
+    public SerializerContext withType(@Nullable AnnotatedType annotatedType) {
         return new SerializerContext(annotatedType, serializerProvider);
     }
 
@@ -35,7 +35,8 @@ public record SerializerContext(@Nullable AnnotatedType annotatedType, Serialize
      * @return new context
      * @see Token
      */
-    public SerializerContext withType(Token<?> token) {
+    public SerializerContext withType(@Nullable Token<?> token) {
+        if (token == null) return withType((AnnotatedType) null);
         AnnotatedParameterizedType type = (AnnotatedParameterizedType) token.getClass().getAnnotatedSuperclass();
         return withType(type.getAnnotatedActualTypeArguments()[0]);
     }
