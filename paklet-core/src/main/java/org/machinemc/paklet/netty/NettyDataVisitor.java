@@ -60,7 +60,7 @@ public class NettyDataVisitor implements DataVisitor {
     @Override
     public DataVisitor writeByte(byte value) {
         delegate.writeByte(value);
-        return null;
+        return this;
     }
 
     @Override
