@@ -8,7 +8,6 @@ import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.kotlin.dsl.withType
 import org.machinemc.paklet.plugin.bytecode.PacketExpander
 import java.io.File
-import java.io.FileReader
 
 /**
  * Entry point for Paklet Gradle plugin.
@@ -25,9 +24,12 @@ abstract class PakletPlugin : Plugin<Project> {
                 val packetData = File(directory, "paklet-packet-data.json")
                 if (!packetData.exists()) return@doLast
 
-                var packets: JsonArray
-                JsonParser.parseReader(FileReader(packetData)).asJsonObject.run {
-                    packets = getAsJsonArray("packets")
+                val packets: JsonArray
+
+                packetData.reader().use { reader ->
+                    packets = JsonParser.parseReader(reader)
+                        .asJsonObject
+                        .getAsJsonArray("packets")
                 }
 
                 packets.forEach { packet -> PacketExpander(PluginUtils.classFile(directory, packet.asString)) }
